@@ -1,0 +1,59 @@
+.draggable-wrapper {
+  user-select: none;
+}
+
+.draggable-wrapper.move-mode {
+  cursor: grab;
+  outline: 2px dashed var(--neon-cyan);
+  outline-offset: 4px;
+  animation: border-pulse 1.5s infinite;
+}
+
+.draggable-wrapper.dragging {
+  cursor: grabbing;
+  opacity: 0.8;
+  transform: scale(1.02);
+}
+
+.nura-context-menu {
+  background: rgba(5, 10, 20, 0.95);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--neon-cyan);
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 9999;
+  box-shadow: 0 0 20px rgba(0, 255, 225, 0.3);
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+  min-width: 180px;
+}
+
+.nura-context-menu button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-align: left;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nura-context-menu button:hover {
+  background: var(--neon-cyan);
+  color: #000;
+}
+
+.draggable-wrapper.saved {
+  animation: save-flash 0.6s ease-out;
+}
+
+@keyframes save-flash {
+  0% { filter: brightness(1); transform: scale(1); }
+  50% { filter: brightness(2) drop-shadow(0 0 20px var(--neon-cyan)); transform: scale(1.05); }
+  100% { filter: brightness(1); transform: scale(1); }
+}

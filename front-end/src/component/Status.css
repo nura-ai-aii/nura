@@ -1,0 +1,103 @@
+.status-container {
+  position: fixed;
+  top: 100px;
+  right: 5%;
+  width: 280px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  /* Angular Sci-Fi Shape */
+  clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 85% 100%, 0% 100%, 0% 15%);
+  
+  border-right: 2px solid rgba(0, 255, 225, 0.5);
+  padding: 20px 25px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  font-family: 'Rajdhani', sans-serif;
+  animation: slideInRight 0.5s ease-out;
+}
+
+.status-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(0, 102, 255, 0.05), transparent);
+  pointer-events: none;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-ring {
+  width: 600px;
+  height: 600px;
+  border: 1px solid rgba(0, 255, 225, 0.1);
+  border-radius: 50%;
+  position: absolute;
+  animation: rotate 20s linear infinite;
+}
+
+.hud-ring::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background: #00ffe1;
+  box-shadow: 0 0 15px #00ffe1;
+  border-radius: 50%;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.status-header {
+  color: #00ffe1;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  border-bottom: 1px dashed rgba(0, 255, 225, 0.3);
+  padding-bottom: 5px;
+  text-align: right;
+}
+
+.status-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-label {
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 1px;
+}
+
+.status-value {
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 10px currentColor;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 1200px) {
+  .status-container {
+    top: 100px;
+    right: 20px;
+  }
+}

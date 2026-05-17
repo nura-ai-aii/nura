@@ -1,0 +1,156 @@
+.terminal-container {
+  position: relative;
+  width: 500px;
+  max-width: 95vw;
+  min-height: 120px;
+  background: rgba(5, 10, 20, 0.8);
+  backdrop-filter: blur(25px) saturate(150%);
+  -webkit-backdrop-filter: blur(25px) saturate(150%);
+  
+  clip-path: polygon(0% 0%, 94% 0%, 100% 12%, 100% 100%, 6% 100%, 0% 88%);
+  border: 1px solid rgba(0, 255, 225, 0.15);
+  border-left: 3px solid #00ffe1;
+  
+  padding: 30px;
+  box-shadow: 0 20px 80px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 225, 0.1);
+  z-index: 900;
+  font-family: 'Rajdhani', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  user-select: none;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scanline Effect */
+.terminal-container::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+  z-index: 2;
+  background-size: 100% 3px, 3px 100%;
+  pointer-events: none;
+  opacity: 0.1;
+}
+
+.terminal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  z-index: 3;
+}
+
+.ai-section {
+  border-top: 1px solid rgba(0, 255, 225, 0.1);
+  padding-top: 20px;
+}
+
+.terminal-header {
+  color: #00ffe1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0.6;
+}
+
+.ai-header {
+  color: #0084ff;
+}
+
+.terminal-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #00ffe1;
+  border-radius: 2px; /* Square dots for sci-fi look */
+  box-shadow: 0 0 10px #00ffe1;
+  animation: pulse-terminal 2s infinite;
+}
+
+.ai-dot {
+  background-color: #0084ff;
+  box-shadow: 0 0 10px #0084ff;
+}
+
+.terminal-content {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  line-height: 1.5;
+  text-shadow: 0 0 8px rgba(0, 255, 225, 0.2);
+  user-select: text;
+}
+
+.user-text {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ai-text {
+  color: #00ffe1;
+  font-weight: 600;
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 10px;
+  height: 20px;
+  background-color: #00ffe1;
+  margin-left: 8px;
+  animation: blink 0.8s step-end infinite;
+  vertical-align: middle;
+  box-shadow: 0 0 10px #00ffe1;
+}
+
+@keyframes pulse-terminal {
+  0% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.4; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.terminal-input-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: rgba(0, 255, 225, 0.05);
+  padding: 10px 15px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 225, 0.1);
+  margin-top: 10px;
+}
+
+.input-prompt {
+  color: #00ffe1;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.terminal-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #00ffe1;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  letter-spacing: 1px;
+  width: 100%;
+}
+
+.terminal-input::placeholder {
+  color: rgba(0, 255, 225, 0.3);
+  font-size: 12px;
+  letter-spacing: 2px;
+}

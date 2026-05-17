@@ -1,0 +1,11 @@
+{
+  "name": "jarvis-root",
+  "version": "1.0.0",
+  "description": "J.A.R.V.I.S. Root Controller",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
