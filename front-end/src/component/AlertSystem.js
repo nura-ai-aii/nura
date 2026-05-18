@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AlertSystem.css';
 import DraggableComponent from './DraggableComponent';
+import { BACKEND_URL } from '../config';
+
 
 let alertIdCounter = 0;
 
@@ -129,7 +131,7 @@ export default function AlertSystem({ apiHealth }) {
             <div className="critical-title">SYSTEM ALERT</div>
             <div className="critical-type">{criticalError.type.replace(/_/g, ' ')}</div>
             <div className="critical-msg">{criticalError.message}</div>
-            <div className="critical-hint">Check backend server at 127.0.0.1:5001</div>
+            <div className="critical-hint">Check backend server at {BACKEND_URL}</div>
             <button className="critical-dismiss" onClick={() => setCriticalError(null)}>
               ACKNOWLEDGE
             </button>

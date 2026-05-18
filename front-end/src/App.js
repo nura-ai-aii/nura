@@ -9,6 +9,8 @@ import HUDWidgets from './component/HUDWidgets';
 import AlertSystem, { emitAlert } from './component/AlertSystem';
 import DraggableComponent from './component/DraggableComponent';
 import StatusTerminal from './component/StatusTerminal';
+import { BACKEND_URL } from './config';
+
 
 // Interaction States
 const STATE = {
@@ -44,7 +46,7 @@ function App() {
   // Health check
   const checkHealth = useCallback(async () => {
     try {
-      const res = await fetch('http://127.0.0.1:5001/api/health', { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(`${BACKEND_URL}/api/health`, { signal: AbortSignal.timeout(5000) });
       const data = await res.json();
       setApiHealth(data);
       setApiStatus(data.groq === 'connected' ? 'CONNECTED' : 'ERROR');
@@ -57,7 +59,10 @@ function App() {
 
   useEffect(() => {
     setShowTerminal(true);
-  }, []);
+    checkHealth();
+    const interval = setInterval(checkHealth, 15000);
+    return () => clearInterval(interval);
+  }, [checkHealth]);
 
 
   // Persist settings
@@ -88,7 +93,7 @@ function App() {
     const newMessages = [...chatHistory, { role: "user", content: userInput }];
 
     try {
-      const response = await fetch("http://127.0.0.1:5001/api/chat", {
+      const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: newMessages, language: speechLang })
@@ -161,7 +166,7 @@ function App() {
 
     setInteractionState(STATE.SPEAKING);
     try {
-      const response = await fetch("http://127.0.0.1:5001/api/tts", {
+      const response = await fetch(`${BACKEND_URL}/api/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, lang })

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { BACKEND_URL } from "../config";
+
 
 const noiseFunctions = `
   vec3 mod289v3(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -104,7 +106,7 @@ export default function PlasmaOrb({ color = "#00ffe1", size = 300, sensitivity =
 
     try {
       console.log('[STT] Sending audio chunk to backend...');
-      const response = await fetch('http://127.0.0.1:5001/api/stt', {
+      const response = await fetch(`${BACKEND_URL}/api/stt`, {
         method: 'POST',
         body: formData,
       });

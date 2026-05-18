@@ -3,6 +3,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './HUDWidgets.css';
 import DraggableComponent from './DraggableComponent';
+import { BACKEND_URL } from '../config';
+
 
 // Fix Leaflet marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -356,7 +358,7 @@ function DeviceWidgets({ apiStatus }) {
 
   const triggerCommand = async (cmd) => {
     try {
-      await fetch("http://127.0.0.1:5001/api/command", {
+      await fetch(`${BACKEND_URL}/api/command`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ command: cmd })
