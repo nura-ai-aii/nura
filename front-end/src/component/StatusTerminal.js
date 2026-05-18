@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './StatusTerminal.css';
 
+const STATE_LABELS = {
+  IDLE: 'STANDBY',
+  LISTENING: 'LISTENING',
+  THINKING: 'SENSING',
+  SPEAKING: 'RESPONDING'
+};
+
 export default function StatusTerminal({ interactionState }) {
   const [logs, setLogs] = useState([]);
   const terminalEndRef = useRef(null);
-
-  const STATE_LABELS = {
-    IDLE: 'STANDBY',
-    LISTENING: 'LISTENING',
-    THINKING: 'SENSING',
-    SPEAKING: 'RESPONDING'
-  };
 
   useEffect(() => {
     const timestamp = new Date().toLocaleTimeString([], { hour12: false });

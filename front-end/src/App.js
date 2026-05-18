@@ -23,7 +23,7 @@ const STATE = {
 function App() {
   const [blobColor, setBlobColor] = useState(localStorage.getItem('nura_blobColor') || '#00ffe1');
   const [blobSize, setBlobSize] = useState(Number(localStorage.getItem('nura_blobSize')) || 300);
-  const [blobSensitivity, setBlobSensitivity] = useState(Number(localStorage.getItem('nura_blobSensitivity')) || 2.0);
+  const [blobSensitivity] = useState(Number(localStorage.getItem('nura_blobSensitivity')) || 2.0);
 
   const [transcript, setTranscript] = useState("");
   const [interactionState, setInteractionState] = useState(STATE.IDLE);
@@ -39,8 +39,6 @@ function App() {
   const [apiHealth, setApiHealth] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
 
-  const audioQueueRef = useRef([]);
-  const isSpeakingQueueRef = useRef(false);
   const lastProcessedTranscriptRef = useRef("");
 
   // Health check
@@ -80,6 +78,7 @@ function App() {
       speakResponse("Master, you have been working for an hour. I suggest a tea break to keep your brilliant mind sharp.", speechLang);
     }, 3600000); // Every 60 minutes
     return () => clearInterval(teaInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [speechLang]);
 
   // Chat logic
@@ -216,6 +215,7 @@ function App() {
     }, 400); // Wait 400ms for natural pause if no wake word
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transcript, interactionState]);
 
   // Sync isListening with interactionState
