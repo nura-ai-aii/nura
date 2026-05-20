@@ -39,26 +39,26 @@ export default function Nabbar({ showStatus, setShowStatus, showTerminal, setSho
           </button>
         </li>
       </ul>
-      <div className="navbar-status" title={apiHealth ? `Backend: ${apiHealth.backend} | Groq: ${apiHealth.groq}` : 'Checking...'}>
+      <div className="navbar-status" title={apiHealth ? `Backend: ${apiHealth.backend} | Gemini: ${apiHealth.gemini} | Groq: ${apiHealth.groq} | OpenRouter: ${apiHealth.openrouter}` : 'Checking...'}>
         <span
           className="status-dot"
           style={{
             backgroundColor: (!apiHealth || apiHealth.backend !== 'ok') ? '#ff4444' :
-              apiHealth.groq !== 'connected' ? '#ffb400' : '#00ffe1',
+              (apiHealth.groq !== 'connected' || apiHealth.gemini !== 'connected' || apiHealth.openrouter !== 'connected') ? '#ffb400' : '#00ffe1',
             boxShadow: (!apiHealth || apiHealth.backend !== 'ok')
               ? '0 0 10px #ff4444, 0 0 20px #ff4444'
-              : apiHealth.groq !== 'connected'
+              : (apiHealth.groq !== 'connected' || apiHealth.gemini !== 'connected' || apiHealth.openrouter !== 'connected')
               ? '0 0 10px #ffb400, 0 0 20px #ffb400'
               : '0 0 10px #00ffe1, 0 0 20px #00ffe1',
           }}
         />
         <span style={{
           color: (!apiHealth || apiHealth.backend !== 'ok') ? '#ff4444' :
-            apiHealth.groq !== 'connected' ? '#ffb400' : '#00ffe1'
+            (apiHealth.groq !== 'connected' || apiHealth.gemini !== 'connected' || apiHealth.openrouter !== 'connected') ? '#ffb400' : '#00ffe1'
         }}>
           {!apiHealth ? 'CHECKING...' :
             apiHealth.backend !== 'ok' ? 'OFFLINE' :
-            apiHealth.groq !== 'connected' ? 'API ERROR' : 'ONLINE'}
+            (apiHealth.groq !== 'connected' || apiHealth.gemini !== 'connected' || apiHealth.openrouter !== 'connected') ? 'API ERROR' : 'ONLINE'}
         </span>
       </div>
     </nav>

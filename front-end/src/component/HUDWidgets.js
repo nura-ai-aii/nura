@@ -412,8 +412,9 @@ function DeviceWidgets({ apiStatus }) {
 function ServiceHealth({ apiStatus, apiHealth }) {
   const services = [
     { name: 'NURA BACKEND', status: apiHealth?.backend === 'ok' ? 'ONLINE' : 'OFFLINE', color: apiHealth?.backend === 'ok' ? '#00ff80' : '#ff4444' },
+    { name: 'GEMINI 2.5 FLASH', status: apiHealth?.gemini === 'connected' ? 'CONNECTED' : 'ERROR', color: apiHealth?.gemini === 'connected' ? '#00ffe1' : '#ffbb00' },
     { name: 'GROQ AI CORE', status: apiHealth?.groq === 'connected' ? 'CONNECTED' : 'ERROR', color: apiHealth?.groq === 'connected' ? '#00ffe1' : '#ffbb00' },
-    { name: 'GITHUB EXPERT AI', status: apiHealth?.github === 'connected' ? 'CONNECTED' : 'ERROR', color: apiHealth?.github === 'connected' ? '#00ffe1' : '#ffbb00' },
+    { name: 'GPT-5.4 PRO (OPENROUTER)', status: apiHealth?.openrouter === 'connected' ? 'CONNECTED' : 'ERROR', color: apiHealth?.openrouter === 'connected' ? '#00ffe1' : '#ffbb00' },
     { name: 'EDGE TTS ENGINE', status: apiHealth?.tts === 'ok' ? 'READY' : 'WAITING', color: apiHealth?.tts === 'ok' ? '#a855f7' : '#555' },
     { name: 'FRONT-END UI', status: 'ACTIVE', color: '#0084ff' }
   ];

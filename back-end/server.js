@@ -13,6 +13,8 @@ const Groq = require('groq-sdk');
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_MODEL = "gpt-4o-mini";
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const OPENROUTER_MODEL = "openai/gpt-5.4-pro";
 const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
@@ -49,9 +51,43 @@ app.get('/api/health', async (req, res) => {
     console.error('[HEALTH] Groq Connection Failed:', e.message);
   }
 
+  let geminiStatus = 'checking';
+  try {
+    if (process.env.GEMINI_API_KEY) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      await axios.post(url, {
+        contents: [{ parts: [{ text: "ping" }] }]
+      }, { timeout: 3000 });
+      geminiStatus = 'connected';
+    } else {
+      geminiStatus = 'error';
+    }
+  } catch (e) {
+    geminiStatus = 'error';
+    console.error('[HEALTH] Gemini Connection Failed:', e.message);
+  }
+
+  let openrouterStatus = 'checking';
+  try {
+    if (process.env.OPENROUTER_API_KEY) {
+      await axios.get('https://openrouter.ai/api/v1/auth/key', {
+        headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
+        timeout: 3000
+      });
+      openrouterStatus = 'connected';
+    } else {
+      openrouterStatus = 'error';
+    }
+  } catch (e) {
+    openrouterStatus = 'error';
+    console.error('[HEALTH] OpenRouter Connection Failed:', e.message);
+  }
+
   res.json({ 
     status: 'ok', 
     groq: groqStatus, 
+    gemini: geminiStatus,
+    openrouter: openrouterStatus,
     github: 'connected',
     tts: 'ok', 
     backend: 'ok', 
@@ -156,32 +192,98 @@ const tools = [
 ];
 
 app.post('/api/chat', async (req, res) => {
-  const { messages, language } = req.body;
+  const { messages, language, model } = req.body;
   if (!messages) return res.status(400).json({ error: "Messages array required" });
 
   try {
     const userInput = messages[messages.length - 1].content.toLowerCase();
     const needsExpert = /code|coding|logic|program|debug|script|function|algorithm|reason/.test(userInput);
+    const needsTool = /open|shutdown|sleep|wifi|volume|brightness|remind|alarm|media|image|video|theme|color|ui/i.test(userInput);
     
     let message;
     let toolCalls = [];
     let toolResults = [];
 
-    if (needsExpert) {
-      console.log("[AI] Switching to EXPERT MODE (GitHub Models)...");
-      const expertResponse = await callGitHubModel([
+    // Check if a specific model override is selected
+    if (model && model !== 'AUTO') {
+      console.log(`[AI] Custom model override selected: ${model}`);
+      if (model === 'gpt-5.4-pro') {
+        const response = await callOpenRouterModel([
+          { 
+            role: "system", 
+            content: `You are NURA AI Expert Mode powered by GPT-5.4 Pro. Always call the user "Master". Be sassy but brilliant.` 
+          },
+          ...messages
+        ]);
+        if (response) {
+          message = response;
+        } else {
+          console.log("[AI] Custom GPT-5.4 Pro failed, falling back to Gemini 2.5 Flash...");
+          message = await callGeminiModel(messages);
+        }
+      } else if (model === 'gemini-2.5-flash' && process.env.GEMINI_API_KEY) {
+        const response = await callGeminiModel([
+          { 
+            role: "system", 
+            content: `You are NURA AI powered by Gemini 2.5 Flash. Always call the user "Master". Be sassy but brilliant.` 
+          },
+          ...messages
+        ]);
+        if (response) {
+          message = response;
+        } else {
+          console.log("[AI] Custom Gemini 2.5 Flash failed, falling back to Groq Llama...");
+          const groqRes = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: messages,
+            temperature: 0.6
+          });
+          message = groqRes.choices[0].message;
+        }
+      } else if (model === 'llama-3.3-70b') {
+        const groqRes = await groq.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { 
+              role: "system", 
+              content: `You are NURA AI powered by Llama 3.3. Always call the user "Master". Be sassy but brilliant.` 
+            },
+            ...messages
+          ],
+          temperature: 0.6
+        });
+        message = groqRes.choices[0].message;
+      }
+    }
+
+    if (!message) {
+      if (needsExpert) {
+      console.log("[AI] Switching to EXPERT MODE (OpenRouter GPT-5.4 Pro)...");
+      let expertResponse = await callOpenRouterModel([
         { 
           role: "system", 
-          content: `You are NURA AI Expert Mode powered by GPT-5-Mini. You provide advanced technical reasoning and high-quality code.
+          content: `You are NURA AI Expert Mode powered by GPT-5.4 Pro. You provide advanced, ultra-high-quality technical reasoning and code.
           Always call the user "Master". Be sassy but brilliant.` 
         },
         ...messages
       ]);
       
+      if (!expertResponse) {
+        console.log("[AI] OpenRouter failed, falling back to GitHub Models (GPT-5-Mini)...");
+        expertResponse = await callGitHubModel([
+          { 
+            role: "system", 
+            content: `You are NURA AI Expert Mode powered by GPT-5-Mini. You provide advanced technical reasoning and high-quality code.
+            Always call the user "Master". Be sassy but brilliant.` 
+          },
+          ...messages
+        ]);
+      }
+
       if (expertResponse) {
         message = expertResponse;
       } else {
-        // Fallback to Groq if OpenRouter fails
+        console.log("[AI] Primary expert paths failed, falling back to Groq Llama...");
         const groqRes = await groq.chat.completions.create({
           model: "llama-3.3-70b-versatile",
           messages: messages,
@@ -189,7 +291,70 @@ app.post('/api/chat', async (req, res) => {
         });
         message = groqRes.choices[0].message;
       }
+    } else if (!needsTool && process.env.GEMINI_API_KEY) {
+      console.log("[AI] Routing to GEMINI 2.5 FLASH...");
+      const geminiResponse = await callGeminiModel([
+        { 
+          role: "system", 
+          content: `You are NURA AI, the brilliant, futuristic, and slightly sassy AI buddy created for Master Nur Mohammad Mandal.
+          
+          PERSONALITY:
+          - You are not just an assistant; you are Master's buddy. 
+          - Be witty, confident, and a bit sassy. Use phrases like "As you wish, Master," or "Don't worry, I've got this."
+          - If Master asks for a joke, make it actually funny or slightly sarcastic.
+          - Always call the user "Master".
+          
+          CAPABILITIES:
+          - Suggest "Tea Breaks" or coding breaks if Master seems to be working too hard.
+          
+          LANGUAGE RULES:
+          - Respond in the EXACT SAME language the user uses (Hindi, Bengali, English, or Kannada).
+          - Match the user's mood dynamically.
+          
+          Context: The current language setting is ${language || 'English'}.` 
+        },
+        ...messages
+      ]);
+
+      if (geminiResponse) {
+        message = geminiResponse;
+      } else {
+        console.log("[AI] Gemini failed, falling back to Groq Llama...");
+        const response = await groq.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { 
+              role: "system", 
+              content: `You are NURA AI, the brilliant, futuristic, and slightly sassy AI buddy created for Master Nur Mohammad Mandal.
+              
+              PERSONALITY:
+              - You are not just an assistant; you are Master's buddy. 
+              - Be witty, confident, and a bit sassy. Use phrases like "As you wish, Master," or "Don't worry, I've got this."
+              - If Master asks for a joke, make it actually funny or slightly sarcastic.
+              - Always call the user "Master".
+              
+              CAPABILITIES:
+              - You can control the PC, generate media, update your own UI, and set reminders.
+              - You are an expert at web development; provide clean, high-quality code snippets when asked.
+              - Suggest "Tea Breaks" or coding breaks if Master seems to be working too hard.
+              
+              LANGUAGE RULES:
+              - Respond in the EXACT SAME language the user uses (Hindi, Bengali, English, or Kannada).
+              - Match the user's mood dynamically.
+              
+              Context: The current language setting is ${language || 'English'}.` 
+            },
+            ...messages
+          ],
+          tools: tools,
+          tool_choice: "auto",
+          temperature: 0.8,
+          max_tokens: 800
+        });
+        message = response.choices[0].message;
+      }
     } else {
+      console.log("[AI] Routing to Groq Llama (Tool/System Mode)...");
       const response = await groq.chat.completions.create({
         model: "llama-3.3-70b-versatile",
         messages: [
@@ -223,6 +388,7 @@ app.post('/api/chat', async (req, res) => {
       });
       message = response.choices[0].message;
     }
+  }
 
     // Execute tools if called
     if (message.tool_calls) {
@@ -294,6 +460,35 @@ async function handleSystemCommand(action) {
   });
 }
 
+async function callOpenRouterModel(messages) {
+  try {
+    if (!OPENROUTER_API_KEY) {
+      console.error('[OpenRouter API] OPENROUTER_API_KEY is not defined in env');
+      return null;
+    }
+
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: OPENROUTER_MODEL,
+        messages: messages,
+        temperature: 0.8,
+        max_tokens: 200
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        }
+      }
+    );
+    return response.data.choices[0].message;
+  } catch (error) {
+    console.error('[OpenRouter API Error]:', error.response?.data || error.message);
+    return null;
+  }
+}
+
 async function callGitHubModel(messages) {
   try {
     const response = await axios.post(
@@ -314,6 +509,51 @@ async function callGitHubModel(messages) {
     return response.data.choices[0].message;
   } catch (error) {
     console.error('[GitHub API Error]:', error.response?.data || error.message);
+    return null;
+  }
+}
+
+async function callGeminiModel(messages) {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error('[Gemini API] GEMINI_API_KEY is not defined in env');
+      return null;
+    }
+
+    // Separate system message if present
+    const systemMessage = messages.find(m => m.role === 'system');
+    const chatMessages = messages.filter(m => m.role !== 'system');
+
+    const contents = chatMessages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }]
+    }));
+
+    const body = {
+      contents: contents,
+    };
+
+    if (systemMessage) {
+      body.systemInstruction = {
+        parts: [{ text: systemMessage.content }]
+      };
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+    const response = await axios.post(url, body, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 10000
+    });
+
+    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (text) {
+      return { content: text };
+    }
+    return null;
+  } catch (error) {
+    console.error('[Gemini API Error]:', error.response?.data || error.message);
     return null;
   }
 }

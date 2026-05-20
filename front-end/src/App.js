@@ -5,6 +5,7 @@ import PlasmaOrb from './component/blob';
 import Terminal from './component/Terminal';
 import Status from './component/Status';
 import LanguageSelector from './component/LanguageSelector';
+import ModelSelector from './component/ModelSelector';
 import HUDWidgets from './component/HUDWidgets';
 import AlertSystem, { emitAlert } from './component/AlertSystem';
 import DraggableComponent from './component/DraggableComponent';
@@ -38,6 +39,7 @@ function App() {
   const [showHUD, setShowHUD] = useState(true);
   const [apiHealth, setApiHealth] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
+  const [selectedModel, setSelectedModel] = useState(localStorage.getItem('nura_selectedModel') || 'AUTO');
 
   const lastProcessedTranscriptRef = useRef("");
 
@@ -47,9 +49,9 @@ function App() {
       const res = await fetch(`${BACKEND_URL}/api/health`, { signal: AbortSignal.timeout(5000) });
       const data = await res.json();
       setApiHealth(data);
-      setApiStatus(data.groq === 'connected' ? 'CONNECTED' : 'ERROR');
+      setApiStatus((data.groq === 'connected' && data.gemini === 'connected' && data.openrouter === 'connected') ? 'CONNECTED' : 'ERROR');
     } catch (e) {
-      setApiHealth({ backend: 'error', groq: 'error', github: 'error', tts: 'error' });
+      setApiHealth({ backend: 'error', groq: 'error', gemini: 'error', openrouter: 'error', github: 'error', tts: 'error' });
       setApiStatus('OFFLINE');
       emitAlert('BACKEND_DOWN', 'BACKEND_DISCONNECTED: NEURAL_CORE_OFFLINE', true);
     }
@@ -69,7 +71,8 @@ function App() {
     localStorage.setItem('nura_blobSize', blobSize);
     localStorage.setItem('nura_blobSensitivity', blobSensitivity);
     localStorage.setItem('nura_speechLang', speechLang);
-  }, [blobColor, blobSize, blobSensitivity, speechLang]);
+    localStorage.setItem('nura_selectedModel', selectedModel);
+  }, [blobColor, blobSize, blobSensitivity, speechLang, selectedModel]);
 
   // Automatic Tea Break Logic
   useEffect(() => {
@@ -95,7 +98,7 @@ function App() {
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages, language: speechLang })
+        body: JSON.stringify({ messages: newMessages, language: speechLang, model: selectedModel })
       });
 
       const data = await response.json();
@@ -280,6 +283,10 @@ function App() {
 
       <DraggableComponent id="lang-selector" initialPos={{ bottom: 30, right: 400 }}>
         <LanguageSelector speechLang={speechLang} setSpeechLang={setSpeechLang} />
+      </DraggableComponent>
+
+      <DraggableComponent id="model-selector" initialPos={{ bottom: 30, right: 460 }}>
+        <ModelSelector selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
       </DraggableComponent>
 
       <DraggableComponent id="status-terminal" initialPos={{ bottom: 30, left: 30 }}>
