@@ -1,6 +1,7 @@
+require('dotenv').config();
 const axios = require('axios');
 
-const API_KEY = "AIzaSyDmKWudx27toLZXyWY4mDupXl-s_8jGl-A";
+const API_KEY = process.env.GEMINI_API_KEY;
 
 async function testModel(modelName) {
   console.log(`[TEST] Testing model: ${modelName}...`);

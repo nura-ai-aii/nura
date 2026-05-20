@@ -1,7 +1,7 @@
 const axios = require('axios');
 require('dotenv').config();
 
-const apiKey = process.env.GEMINI_API_KEY || "AIzaSyDmKWudx27toLZXyWY4mDupXl-s_8jGl-A";
+const apiKey = process.env.GEMINI_API_KEY;
 
 async function callGeminiModel(messages) {
   try {
