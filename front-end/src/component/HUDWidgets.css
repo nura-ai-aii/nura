@@ -587,3 +587,75 @@
   from { transform: translateX(-20px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* ──────────────────────────────────────────────
+   RESPONSIVE HUD SYSTEMS GRID & PANEL STYLES
+   ────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .hud-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .radar-widget-wrap, .map-widget-wrap {
+    grid-row: auto !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .hud-panel-overlay {
+    top: 70px !important;
+  }
+
+  .hud-panel-header {
+    padding: 12px 20px !important;
+  }
+
+  .hud-panel-title {
+    font-size: 16px !important;
+    letter-spacing: 2px !important;
+  }
+
+  .hud-panel-subtitle {
+    font-size: 9px !important;
+    letter-spacing: 1px !important;
+  }
+
+  .hud-close-btn {
+    padding: 6px 12px !important;
+    font-size: 9px !important;
+  }
+
+  .hud-grid {
+    grid-template-columns: 1fr !important;
+    padding: 12px !important;
+    gap: 12px !important;
+  }
+
+  .hud-widget {
+    padding: 14px 16px !important;
+  }
+
+  .clock-canvas, .radar-canvas {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  .digital-time {
+    font-size: 20px !important;
+  }
+
+  .date-main {
+    font-size: 20px !important;
+  }
+
+  .map-container {
+    height: 200px !important;
+  }
+
+  .hud-status-bar {
+    padding: 10px 20px !important;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start !important;
+  }
+}

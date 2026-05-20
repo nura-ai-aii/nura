@@ -1,7 +1,5 @@
 .status-container {
-  position: fixed;
-  top: 100px;
-  right: 5%;
+  position: relative;
   width: 280px;
   background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(20px);

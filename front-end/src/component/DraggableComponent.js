@@ -19,12 +19,22 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
   const [showMenu, setShowMenu] = useState(false);
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [isSaved, setIsSaved] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   
   const dragStart = useRef({ x: 0, y: 0, initRight: 0, initBottom: 0 });
   const containerRef = useRef(null);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Handle Right Click
   const handleContextMenu = (e) => {
+    if (isMobile) return;
     e.preventDefault();
     setMenuPos({ x: e.clientX, y: e.clientY });
     setShowMenu(true);
@@ -116,7 +126,15 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
       className={`draggable-wrapper ${isMoveMode ? 'move-mode' : ''} ${isDragging ? 'dragging' : ''} ${isSaved ? 'saved' : ''}`}
       onContextMenu={handleContextMenu}
       onMouseDown={handleMouseDown}
-      style={{
+      style={isMobile ? {
+        position: 'relative',
+        bottom: 'auto',
+        right: 'auto',
+        left: 'auto',
+        width: '100%',
+        margin: '10px 0',
+        zIndex: id === 'plasma-orb' ? 1000 : 900
+      } : {
         position: 'fixed',
         bottom: position.bottom + 'px',
         right: position.right + 'px',

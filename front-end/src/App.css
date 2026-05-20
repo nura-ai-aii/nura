@@ -135,3 +135,92 @@ body {
   font-size: 12px;
   text-transform: uppercase;
 }
+
+/* ──────────────────────────────────────────────
+   MOBILE & RESPONSIVE LAYOUT STYLES
+   ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .App {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 85px 15px 100px 15px; /* Adjust top and bottom padding for navbar and bottom dock */
+    gap: 20px;
+    width: 100vw;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Stacking Order of Draggable components on Mobile */
+  #plasma-orb {
+    order: 1;
+    margin: 15px 0 !important;
+    display: flex;
+    justify-content: center;
+  }
+
+  #terminal {
+    order: 2;
+    width: 100% !important;
+    max-width: 500px !important;
+  }
+
+  #status-terminal {
+    order: 3;
+    width: 100% !important;
+    max-width: 500px !important;
+  }
+
+  #status-hud {
+    order: 4;
+    width: 100% !important;
+    max-width: 500px !important;
+  }
+
+  /* Reposition Floating Language & Model Selectors under Top Navbar on Mobile */
+  #lang-selector {
+    position: fixed !important;
+    top: 75px !important;
+    right: 15px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    z-index: 1001 !important;
+  }
+
+  #model-selector {
+    position: fixed !important;
+    top: 75px !important;
+    right: 75px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: auto !important;
+    margin: 0 !important;
+    z-index: 1001 !important;
+  }
+
+  /* Make sure components are styled beautifully on mobile */
+  .terminal-container {
+    width: 100% !important;
+    padding: 20px !important;
+    gap: 15px !important;
+  }
+
+  .terminal-content {
+    font-size: 16px !important;
+  }
+
+  .status-terminal {
+    width: 100% !important;
+  }
+
+  .status-container {
+    width: 100% !important;
+    clip-path: none !important; /* Avoid clipping status items on small widths */
+    border-right: none !important;
+    border-top: 1px solid rgba(0, 255, 225, 0.4) !important;
+    border-bottom: 1px solid rgba(0, 255, 225, 0.4) !important;
+  }
+}
