@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ModelSelector.css';
-import aiLogo from '../images/Ai.png';
+import aiLogo from '../images/AiN.png';
 
 export default function ModelSelector({ selectedModel, setSelectedModel }) {
   const [isOpen, setIsOpen] = useState(false);
