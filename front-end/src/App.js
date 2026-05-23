@@ -11,6 +11,7 @@ import AlertSystem, { emitAlert } from './component/AlertSystem';
 import DraggableComponent from './component/DraggableComponent';
 import StatusTerminal from './component/StatusTerminal';
 import { BACKEND_URL } from './config';
+import BackgroundModeToggle from './component/BackgroundModeToggle';
 
 
 // Interaction States
@@ -40,6 +41,9 @@ function App() {
   const [apiHealth, setApiHealth] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
   const [selectedModel, setSelectedModel] = useState(localStorage.getItem('nura_selectedModel') || 'AUTO');
+  const [backgroundWakeWordMode, setBackgroundWakeWordMode] = useState(
+    localStorage.getItem('nura_backgroundWakeWordMode') === 'true'
+  );
 
   const lastProcessedTranscriptRef = useRef("");
 
@@ -72,7 +76,22 @@ function App() {
     localStorage.setItem('nura_blobSensitivity', blobSensitivity);
     localStorage.setItem('nura_speechLang', speechLang);
     localStorage.setItem('nura_selectedModel', selectedModel);
-  }, [blobColor, blobSize, blobSensitivity, speechLang, selectedModel]);
+    localStorage.setItem('nura_backgroundWakeWordMode', backgroundWakeWordMode);
+  }, [blobColor, blobSize, blobSensitivity, speechLang, selectedModel, backgroundWakeWordMode]);
+
+  const toggleBackgroundMode = () => {
+    const nextVal = !backgroundWakeWordMode;
+    setBackgroundWakeWordMode(nextVal);
+    
+    if (nextVal) {
+      emitAlert('SYS_WAKEWORD', 'BACKGROUND WAKE-WORD ASSISTANT ENGAGED', false);
+      speakResponse("Background assistant mode engaged. Master, I will be listening in the background.", speechLang);
+      setInteractionState(STATE.LISTENING);
+    } else {
+      emitAlert('SYS_CONSOLE', 'FULL HUD CONSOLE RESTORED', false);
+      speakResponse("Console restored, Master.", speechLang);
+    }
+  };
 
   // Automatic Tea Break Logic
   useEffect(() => {
@@ -227,23 +246,28 @@ function App() {
   const isSpeaking = interactionState === STATE.SPEAKING;
 
   return (
-    <div className="App">
+    <div className={`App ${backgroundWakeWordMode ? 'background-assistant-mode' : ''}`}>
       <AlertSystem apiHealth={apiHealth} />
-      <Nabbar
-        showStatus={showStatus} setShowStatus={setShowStatus}
-        showTerminal={showTerminal} setShowTerminal={setShowTerminal}
-        apiHealth={apiHealth}
-        showHUD={showHUD} setShowHUD={setShowHUD}
-      />
+      
+      {!backgroundWakeWordMode && (
+        <Nabbar
+          showStatus={showStatus} setShowStatus={setShowStatus}
+          showTerminal={showTerminal} setShowTerminal={setShowTerminal}
+          apiHealth={apiHealth}
+          showHUD={showHUD} setShowHUD={setShowHUD}
+        />
+      )}
 
-      <HUDWidgets
-        apiStatus={apiStatus}
-        apiHealth={apiHealth}
-        visible={showHUD}
-        onClose={() => setShowHUD(false)}
-      />
+      {!backgroundWakeWordMode && (
+        <HUDWidgets
+          apiStatus={apiStatus}
+          apiHealth={apiHealth}
+          visible={showHUD}
+          onClose={() => setShowHUD(false)}
+        />
+      )}
 
-      {showStatus && (
+      {!backgroundWakeWordMode && showStatus && (
         <DraggableComponent id="status-hud" initialPos={{ bottom: 200, right: 200 }}>
           <Status
             isListening={isListening}
@@ -267,31 +291,43 @@ function App() {
         />
       </DraggableComponent>
 
-      <DraggableComponent id="terminal" initialPos={{ bottom: 380, right: 30 }}>
-        <Terminal
-          transcript={transcript}
-          aiResponse={aiResponse}
-          isListening={isListening}
-          isProcessing={isProcessing}
-          showTerminal={showTerminal}
-          onSendMessage={(msg) => {
-            setTranscript(msg);
-            callNeuralCore(msg);
-          }}
-        />
+      {!backgroundWakeWordMode && (
+        <DraggableComponent id="terminal" initialPos={{ bottom: 380, right: 30 }}>
+          <Terminal
+            transcript={transcript}
+            aiResponse={aiResponse}
+            isListening={isListening}
+            isProcessing={isProcessing}
+            showTerminal={showTerminal}
+            onSendMessage={(msg) => {
+              setTranscript(msg);
+              callNeuralCore(msg);
+            }}
+          />
+        </DraggableComponent>
+      )}
+
+      {!backgroundWakeWordMode && (
+        <DraggableComponent id="lang-selector" initialPos={{ bottom: 30, right: 400 }}>
+          <LanguageSelector speechLang={speechLang} setSpeechLang={setSpeechLang} />
+        </DraggableComponent>
+      )}
+
+      {!backgroundWakeWordMode && (
+        <DraggableComponent id="model-selector" initialPos={{ bottom: 30, right: 460 }}>
+          <ModelSelector selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
+        </DraggableComponent>
+      )}
+
+      <DraggableComponent id="bg-toggle-selector" initialPos={{ bottom: 30, right: backgroundWakeWordMode ? 100 : 520 }}>
+        <BackgroundModeToggle active={backgroundWakeWordMode} onClick={toggleBackgroundMode} />
       </DraggableComponent>
 
-      <DraggableComponent id="lang-selector" initialPos={{ bottom: 30, right: 400 }}>
-        <LanguageSelector speechLang={speechLang} setSpeechLang={setSpeechLang} />
-      </DraggableComponent>
-
-      <DraggableComponent id="model-selector" initialPos={{ bottom: 30, right: 460 }}>
-        <ModelSelector selectedModel={selectedModel} setSelectedModel={setSelectedModel} />
-      </DraggableComponent>
-
-      <DraggableComponent id="status-terminal" initialPos={{ bottom: 30, left: 30 }}>
-        <StatusTerminal interactionState={interactionState} />
-      </DraggableComponent>
+      {!backgroundWakeWordMode && (
+        <DraggableComponent id="status-terminal" initialPos={{ bottom: 30, left: 30 }}>
+          <StatusTerminal interactionState={interactionState} />
+        </DraggableComponent>
+      )}
 
       {generatedImage && (
         <div className="image-modal" onClick={() => setGeneratedImage(null)}>

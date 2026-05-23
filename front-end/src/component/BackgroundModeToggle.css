@@ -1,0 +1,98 @@
+.background-toggle-container {
+  position: relative;
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.bg-toggle-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(0, 255, 225, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 255, 225, 0.1), inset 0 0 10px rgba(0, 255, 225, 0.05);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  position: relative;
+  overflow: visible;
+}
+
+.bg-toggle-fab-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 225, 0.5));
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 2;
+}
+
+/* Sci-fi glowing rotating outer ring */
+.glowing-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(0, 255, 225, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.35s ease;
+  animation: rotateRing 8s linear infinite;
+}
+
+@keyframes rotateRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.bg-toggle-fab:hover {
+  border-color: #00ffe1;
+  box-shadow: 0 0 20px rgba(0, 255, 225, 0.45), inset 0 0 15px rgba(0, 255, 225, 0.1);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.bg-toggle-fab:hover .bg-toggle-fab-img {
+  filter: drop-shadow(0 0 8px rgba(0, 255, 225, 0.9)) brightness(1.2);
+  transform: scale(1.1);
+}
+
+.bg-toggle-fab:hover .glowing-ring {
+  opacity: 1;
+  inset: -5px;
+  border-color: rgba(0, 255, 225, 0.7);
+}
+
+.bg-toggle-fab.active {
+  background: rgba(0, 255, 225, 0.15);
+  border-color: #00ffe1;
+  box-shadow: 0 0 25px rgba(0, 255, 225, 0.6), inset 0 0 10px rgba(0, 255, 225, 0.2);
+}
+
+.bg-toggle-fab.active .glowing-ring {
+  opacity: 1;
+  inset: -5px;
+  border-color: #00ffe1;
+  border-style: solid;
+  box-shadow: 0 0 10px rgba(0, 255, 225, 0.3);
+}
+
+.bg-toggle-fab.active .bg-toggle-fab-img {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 10px #00ffe1) brightness(1.3);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .bg-toggle-fab {
+    width: 44px;
+    height: 44px;
+  }
+  .bg-toggle-fab-img {
+    width: 24px;
+    height: 24px;
+  }
+}

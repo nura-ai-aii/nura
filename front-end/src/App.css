@@ -224,3 +224,60 @@ body {
     border-bottom: 1px solid rgba(0, 255, 225, 0.4) !important;
   }
 }
+
+/* ──────────────────────────────────────────────
+   BACKGROUND ASSISTANT / WAKE WORD ASSISTANT MODE
+   ────────────────────────────────────────────── */
+.App.background-assistant-mode {
+  background: radial-gradient(circle at center, rgba(10, 20, 45, 0.98) 0%, rgba(2, 6, 23, 1) 100%) !important;
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+.App.background-assistant-mode::after {
+  opacity: 0.1 !important; /* Dim holographic scanlines slightly */
+}
+
+/* Mobile-specific centering for background assistant mode */
+@media (max-width: 768px) {
+  .App.background-assistant-mode {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    padding: 0 !important;
+    gap: 30px !important;
+    overflow: hidden !important;
+  }
+
+  .App.background-assistant-mode #plasma-orb {
+    position: relative !important;
+    transform: none !important;
+    bottom: auto !important;
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .App.background-assistant-mode #bg-toggle-selector {
+    position: relative !important;
+    transform: none !important;
+    bottom: auto !important;
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+}
