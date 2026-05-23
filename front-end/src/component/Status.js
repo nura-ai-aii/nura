@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Status.css';
 
-export default function Status({ isListening, apiStatus }) {
+export default function Status({ isListening, apiStatus, interactionCount = 0 }) {
   const [micPermission, setMicPermission] = useState('PENDING');
 
   useEffect(() => {
@@ -16,6 +16,18 @@ export default function Status({ isListening, apiStatus }) {
       });
     }
   }, []);
+
+  // Relationship Familiarity Sync Calculations
+  const level = Math.floor(interactionCount / 20) + 1;
+  const syncPercentage = Math.min(100, Math.floor(((interactionCount % 20) / 20) * 100));
+  
+  const getSyncRank = () => {
+    if (interactionCount <= 5) return 'ACQUAINTANCE';
+    if (interactionCount <= 20) return 'FRIENDLY COMPANION';
+    if (interactionCount <= 50) return 'TRUSTED PARTNER';
+    if (interactionCount <= 100) return 'NEURAL COMPANION';
+    return 'SOUL CONTEXT LINKED 😭';
+  };
 
   const StatusItem = ({ label, value, color }) => (
     <div className="status-item">
@@ -33,6 +45,21 @@ export default function Status({ isListening, apiStatus }) {
         <StatusItem label="MICROPHONE" value={isListening ? 'ON' : 'OFF'} color={isListening ? '#00ffe1' : '#ff4444'} />
         <StatusItem label="PERMISSION" value={micPermission} color={micPermission === 'GRANTED' ? '#00ffe1' : '#ff4444'} />
         <StatusItem label="API_LINK" value={apiStatus} color={apiStatus === 'CONNECTED' ? '#00ffe1' : '#ff4444'} />
+      </div>
+
+      <div className="familiarity-widget">
+        <div className="familiarity-header">
+          <span>NEURAL SYNC LINK</span>
+          <span>LVL {level}</span>
+        </div>
+        <div className="familiarity-bar-wrap">
+          <div className="familiarity-bar-fill" style={{ width: `${syncPercentage}%` }} />
+          <div className="familiarity-bar-glow" style={{ left: `${syncPercentage}%` }} />
+        </div>
+        <div className="familiarity-footer">
+          <span>{getSyncRank()}</span>
+          <span>{syncPercentage}%</span>
+        </div>
       </div>
     </div>
   );

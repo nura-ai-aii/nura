@@ -95,11 +95,11 @@ export default function DraggableComponent({ children, id, className = '', initi
       setTimeout(() => setIsSaved(false), 800);
       
       // On-screen notification
-      emitAlert('POSITION_SAVED', `${id.toUpperCase().replace('WIDGET-', '')} POSITION SECURED`, false);
+      emitAlert('POSITION_SAVED', `${id.toUpperCase().replace('WIDGET-', '')} STAYS HERE! LOOKS PERFECT ✨`, false);
       console.log(`[NURA] Position saved for ${id}:`, position);
     } catch (err) {
       console.error("Save failed:", err);
-      emitAlert('SAVE_ERROR', 'ENCRYPTION FAILURE: POSITION NOT SAVED', true);
+      emitAlert('SAVE_ERROR', "OOF, SAVING FAILED! SOMETHING IS BLOCKED 😭", true);
     }
   };
 
@@ -113,7 +113,7 @@ export default function DraggableComponent({ children, id, className = '', initi
       setHasSaved(false);
       setPosition(initialPos);
       setShowMenu(false);
-      emitAlert('POSITION_RESET', `${id.toUpperCase().replace('WIDGET-', '')} RETURNED TO GRID`, false);
+      emitAlert('POSITION_RESET', `${id.toUpperCase().replace('WIDGET-', '')} RETURNED TO GRID! SYMMETRY IS BACK ✨`, false);
     } catch (err) {
       console.error(err);
     }

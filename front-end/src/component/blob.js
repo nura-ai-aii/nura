@@ -79,10 +79,15 @@ export default function PlasmaOrb({ color = "#00ffe1", size = 300, sensitivity =
     micActiveRef.current = micActive;
   }, [micActive]);
 
-  const isSpeakingRef = useRef(false);
+  const isSpeakingRef = useRef(isSpeaking);
   useEffect(() => {
     isSpeakingRef.current = isSpeaking;
   }, [isSpeaking]);
+
+  const interactionStateRef = useRef(interactionState);
+  useEffect(() => {
+    interactionStateRef.current = interactionState;
+  }, [interactionState]);
 
   // ── BACKEND WHISPER STT ──────────────────────────────────────
   const mediaRecorderRef = useRef(null);
@@ -434,13 +439,60 @@ export default function PlasmaOrb({ color = "#00ffe1", size = 300, sensitivity =
         // Tick VAD for backend STT
         tickVAD(rawLevel);
 
-        const scale = 1.0 + audioVal * 0.35;
+        const state = interactionStateRef.current;
+        const isThinking = state === 'THINKING';
+        const isSpeakingState = state === 'SPEAKING';
+
+        // Dynamic parameters based on cognitive state
+        let speedMultiplier = 1.2;
+        let scalePulse = 1.0;
+        let brightnessVal = 1.31;
+        let scaleVal = 0.2;
+
+        if (isThinking) {
+          // Hyper-active thinking speed and turbulent breathing waves
+          speedMultiplier = 2.8;
+          scalePulse = 1.0 + Math.sin(t * 8.0) * 0.07;
+          brightnessVal = 1.8 + Math.sin(t * 6.0) * 0.4;
+          scaleVal = 0.38 + Math.cos(t * 3.0) * 0.08;
+
+          // Color morphing between cyan and tech purple
+          const cyanColor = new THREE.Color(color);
+          const purpleColor = new THREE.Color(0xa855f7);
+          const factor = (Math.sin(t * 4.0) + 1.0) / 2.0;
+          const activeColor = cyanColor.clone().lerp(purpleColor, factor);
+          plasmaMat.uniforms.uColorBright.value = activeColor;
+          shellFrontMat.uniforms.uColor.value = activeColor;
+        } else if (isSpeakingState) {
+          // Gentle voice sync breathing
+          speedMultiplier = 1.5;
+          scalePulse = 1.04 + Math.sin(t * 3.0) * 0.03;
+          brightnessVal = 1.4;
+          
+          const activeColor = new THREE.Color(color);
+          plasmaMat.uniforms.uColorBright.value = activeColor;
+          shellFrontMat.uniforms.uColor.value = activeColor;
+        } else {
+          // Slow calm ambient breathing
+          speedMultiplier = 0.8;
+          scalePulse = 1.0 + Math.sin(t * 1.5) * 0.025;
+          brightnessVal = 1.2;
+
+          const activeColor = new THREE.Color(color);
+          plasmaMat.uniforms.uColorBright.value = activeColor;
+          shellFrontMat.uniforms.uColor.value = activeColor;
+        }
+
+        const scale = scalePulse + audioVal * 0.35;
         mainGroup.scale.setScalar(scale);
 
-        plasmaMat.uniforms.uTime.value = t * 1.2;
-        plasmaMat.uniforms.uAudio.value = audioVal;
+        plasmaMat.uniforms.uTime.value = t * speedMultiplier;
+        plasmaMat.uniforms.uAudio.value = isThinking ? 0.3 + Math.sin(t * 4.0) * 0.1 : audioVal;
+        plasmaMat.uniforms.uBrightness.value = brightnessVal;
+        plasmaMat.uniforms.uScale.value = scaleVal;
+
         pMat.uniforms.uTime.value = t;
-        pMat.uniforms.uAudio.value = audioVal;
+        pMat.uniforms.uAudio.value = isThinking ? 0.35 : audioVal;
 
         plasmaMesh.rotation.y = t * 0.08;
         mainGroup.rotation.x += 0.002;

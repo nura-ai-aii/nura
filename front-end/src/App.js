@@ -22,6 +22,76 @@ const STATE = {
   SPEAKING: 'SPEAKING'
 };
 
+function StartupSequence({ onComplete }) {
+  const [logs, setLogs] = React.useState([]);
+  const [progress, setProgress] = React.useState(0);
+
+  const startupLogs = [
+    "COGNITIVE CORES ONLINE... OK",
+    "ARMING WAKE-WORD SENSORS... ACTIVE",
+    "CONNECTING NEURAL TELEMETRY LINK... SYNCED",
+    "INJECTING COMPANION EMOTION DRIVERS V2.4... COMPLETE",
+    "JARVIS SCI-FI HOLOGRAPHIC HUD... ACTIVE",
+    "WELCOME BACK, MASTER NUR MOHAMMAD MANDAL."
+  ];
+
+  React.useEffect(() => {
+    // Add logs one by one with a sci-fi typing delay
+    startupLogs.forEach((log, index) => {
+      setTimeout(() => {
+        setLogs(prev => [...prev, log]);
+      }, index * 320);
+    });
+
+    // Progress bar animation
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 40);
+
+    // Complete startup
+    const completeTimer = setTimeout(() => {
+      onComplete();
+    }, 2500);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(completeTimer);
+    };
+  }, []);
+
+  return (
+    <div className="startup-overlay">
+      <div className="startup-container">
+        <div className="startup-header">
+          <span className="startup-dot-glow"></span>
+          NURA COGNITIVE SYSTEM INITIALIZATION
+        </div>
+        <div className="startup-terminal-box">
+          {logs.map((log, i) => (
+            <div key={i} className={`startup-log-line ${i === startupLogs.length - 1 ? 'log-highlight' : ''}`}>
+              <span className="terminal-prompt">&gt;</span> {log}
+            </div>
+          ))}
+        </div>
+        <div className="startup-loader-wrap">
+          <div className="startup-progress-bar" style={{ width: `${progress}%` }}></div>
+          <div className="startup-loader-glow" style={{ left: `${progress}%` }}></div>
+        </div>
+        <div className="startup-footer">
+          <span>SECURE UPLINK ACTIVE</span>
+          <span>EST. COGNITIVE CALIBRATION: {Math.max(0, 100 - progress)}%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [blobColor, setBlobColor] = useState(localStorage.getItem('nura_blobColor') || '#00ffe1');
   const [blobSize, setBlobSize] = useState(Number(localStorage.getItem('nura_blobSize')) || 300);
@@ -44,8 +114,21 @@ function App() {
   const [backgroundWakeWordMode, setBackgroundWakeWordMode] = useState(
     localStorage.getItem('nura_backgroundWakeWordMode') === 'true'
   );
+  const [isStarting, setIsStarting] = useState(() => {
+    return sessionStorage.getItem('nura_booted') !== 'true';
+  });
 
   const lastProcessedTranscriptRef = useRef("");
+
+  const handleStartupComplete = () => {
+    setIsStarting(false);
+    sessionStorage.setItem('nura_booted', 'true');
+    // Auto start mic listening to feel like wake word is primed
+    setTimeout(() => {
+      const micBtn = document.getElementById('mic-toggle-btn');
+      if (micBtn) micBtn.click();
+    }, 300);
+  };
 
   // Health check
   const checkHealth = useCallback(async () => {
@@ -57,7 +140,7 @@ function App() {
     } catch (e) {
       setApiHealth({ backend: 'error', groq: 'error', gemini: 'error', openrouter: 'error', github: 'error', tts: 'error' });
       setApiStatus('OFFLINE');
-      emitAlert('BACKEND_DOWN', 'BACKEND_DISCONNECTED: NEURAL_CORE_OFFLINE', true);
+      emitAlert('BACKEND_DOWN', 'OOF, NEURAL CORE DISCONNECTED: WE ARE OFFLINE 😭', true);
     }
   }, []);
 
@@ -84,11 +167,11 @@ function App() {
     setBackgroundWakeWordMode(nextVal);
     
     if (nextVal) {
-      emitAlert('SYS_WAKEWORD', 'BACKGROUND WAKE-WORD ASSISTANT ENGAGED', false);
+      emitAlert('SYS_WAKEWORD', "I GOT YOU. LISTENING IN THE BACKGROUND! 👂", false);
       speakResponse("Background assistant mode engaged. Master, I will be listening in the background.", speechLang);
       setInteractionState(STATE.LISTENING);
     } else {
-      emitAlert('SYS_CONSOLE', 'FULL HUD CONSOLE RESTORED', false);
+      emitAlert('SYS_CONSOLE', 'FULL HUD RESTORED. SYMMETRY IS BACK, MASTER! ✨', false);
       speakResponse("Console restored, Master.", speechLang);
     }
   };
@@ -96,7 +179,7 @@ function App() {
   // Automatic Tea Break Logic
   useEffect(() => {
     const teaInterval = setInterval(() => {
-      emitAlert('HEALTH', "MASTER, IT'S TIME FOR A TEA BREAK.", false);
+      emitAlert('HEALTH', "TEA BREAK TIME MASTER! GET SOME CHAI, NOW! ☕", false);
       speakResponse("Master, you have been working for an hour. I suggest a tea break to keep your brilliant mind sharp.", speechLang);
     }, 3600000); // Every 60 minutes
     return () => clearInterval(teaInterval);
@@ -149,21 +232,21 @@ function App() {
                 type: 'video',
                 url: `https://image.pollinations.ai/prompt/${encoded},animated,motion?width=1024&height=1024&nologo=true&seed=${Date.now()}&model=flux-pro`
               });
-              emitAlert('MEDIA', 'NEURAL_VIDEO_SYNTHESIS_INITIATED', false);
+              emitAlert('MEDIA', "VISUALIZING... THIS IS GOING TO BE SO COOL! 🎨", false);
             }
           }
           if (r?.action === "update_ui") {
             if (r.color) setBlobColor(r.color);
             if (r.size) setBlobSize(r.size);
-            emitAlert('UI_SYNC', `ENVIRONMENT UPDATED: ${r.mode || 'SYNCED'}`, false);
+            emitAlert('UI_SYNC', `INTERFACE ADAPTED: SYNCED TO ${r.mode || 'PERFECT'}! ✨`, false);
           }
           if (r?.action === "set_reminder") {
             const delay = r.minutes * 60000;
             setTimeout(() => {
-              emitAlert('REMINDER', r.message.toUpperCase(), true);
+              emitAlert('REMINDER', `MASTER! ${r.message.toUpperCase()} — DON'T FORGET! 😭`, true);
               speakResponse(`Master, reminder: ${r.message}`, speechLang);
             }, delay);
-            emitAlert('SYS', `REMINDER SET: ${r.minutes} MIN`, false);
+            emitAlert('SYS', `REMINDER SECURED: I WON'T LET YOU FORGET THIS! 😭`, false);
           }
         });
       }
@@ -247,6 +330,7 @@ function App() {
 
   return (
     <div className={`App ${backgroundWakeWordMode ? 'background-assistant-mode' : ''}`}>
+      {isStarting && <StartupSequence onComplete={handleStartupComplete} />}
       <AlertSystem apiHealth={apiHealth} />
       
       {!backgroundWakeWordMode && (
@@ -272,6 +356,7 @@ function App() {
           <Status
             isListening={isListening}
             apiStatus={apiStatus}
+            interactionCount={interactionCount}
             onClose={() => setShowStatus(false)}
           />
         </DraggableComponent>
