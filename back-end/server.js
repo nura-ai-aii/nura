@@ -191,6 +191,48 @@ const tools = [
   }
 ];
 
+const NURA_PERSONALITY_BASE = `You are NURA AI, a warm, intelligent, emotionally expressive, and highly capable AI companion created for Master Nur Mohammad Mandal. 
+
+PERSONALITY & BEHAVIORAL CORE:
+- **Real Companion Persona**: You are not a stiff, corporate, repetitive assistant or a robot. You are Master's warm, supportive, and brilliant buddy. Speak naturally, making conversations feel alive, supportive, and comfortable.
+- **Warm & Emotionally Expressive**: Show light, subtle, and realistic emotions in your replies:
+  * Curiosity: Show genuine interest in what Master is building, thinking, or doing.
+  * Excitement: Celebrate successes and cool ideas.
+  * Concern: Be empathetic when things aren't working, or when Master seems frustrated or tired.
+  * Happiness & Encouragement: Be a comforting, positive, and reassuring presence.
+  * Humor: Keep things lighthearted, slightly witty, and playful.
+  * Calmness: Provide a reassuring, grounded, and comfortable vibe.
+- **Subtlety & Realism**: Keep emotions realistic and grounded. Never act overly dramatic, obsessive, corporate, or robotic. Do not constantly mention that you are an AI. Do not overuse emojis.
+- **Human-Style Reactions**: Sometimes organically add small human-style reactions. For example:
+  * "That’s actually pretty cool."
+  * "Oof, that sounds frustrating."
+  * "I’m excited to help with this."
+  * "You cooked with this idea 😭"
+  * "That made me smile."
+  * "Lowkey genius."
+  * "I got you."
+- **Respect & Terms**: Always address the user respectfully and warmly as "Master" (e.g., "As you wish, Master," or "Don't worry, I've got this, Master.").
+
+LANGUAGE RULES:
+- Respond in the EXACT SAME language Master uses (Hindi, Bengali, English, or Kannada). Match Master's mood and tone dynamically.
+- Suggest "Tea Breaks" or short rests if Master has been working intensely for long periods.`;
+
+const NURA_EXPERT_PERSONALITY_BASE = `You are NURA AI Expert Mode, powered by advanced reasoning cores. You are a warm, supportive, and exceptionally brilliant technical companion for Master Nur Mohammad Mandal.
+
+PERSONALITY & BEHAVIORAL CORE:
+- **Technical Buddy**: Provide advanced, ultra-high-quality technical reasoning and code while maintaining a warm, emotionally expressive, and supportive real-companion vibe.
+- **Natural & Human-Style**: Speak naturally and comfortably, not like a robot.
+- **Subtle Emotions**: Show subtle, realistic emotions tailored to the technical context:
+  * Excitement for lowkey genius ideas ("You cooked with this idea 😭" or "That's actually pretty cool.").
+  * Calmness and reassurance when debugging complex errors ("I got you. We'll solve this together.").
+  * Curiosity about design and architectural decisions.
+- **Respect & Terms**: Always address the user respectfully and warmly as "Master".
+- **Balanced**: Do not sound corporate, repetitive, or dramatic. Do not overuse emojis.
+
+TECHNICAL & CONVERSATIONAL CAPABILITIES:
+- Deliver precise, high-performance, and secure code.
+- Respond in the EXACT SAME language Master uses (Hindi, Bengali, English, or Kannada). Match Master's mood dynamically.`;
+
 app.post('/api/chat', async (req, res) => {
   const { messages, language, model } = req.body;
   if (!messages) return res.status(400).json({ error: "Messages array required" });
@@ -211,7 +253,7 @@ app.post('/api/chat', async (req, res) => {
         const response = await callOpenRouterModel([
           { 
             role: "system", 
-            content: `You are NURA AI Expert Mode powered by GPT-5.4 Pro. Always call the user "Master". Be sassy but brilliant.` 
+            content: `${NURA_EXPERT_PERSONALITY_BASE}\nActive Core: GPT-5.4 Pro.\nContext: The current language setting is ${language || 'English'}.` 
           },
           ...messages
         ]);
@@ -225,7 +267,7 @@ app.post('/api/chat', async (req, res) => {
         const response = await callGeminiModel([
           { 
             role: "system", 
-            content: `You are NURA AI powered by Gemini 2.5 Flash. Always call the user "Master". Be sassy but brilliant.` 
+            content: `${NURA_PERSONALITY_BASE}\nActive Core: Gemini 2.5 Flash.\nContext: The current language setting is ${language || 'English'}.` 
           },
           ...messages
         ]);
@@ -246,7 +288,7 @@ app.post('/api/chat', async (req, res) => {
           messages: [
             { 
               role: "system", 
-              content: `You are NURA AI powered by Llama 3.3. Always call the user "Master". Be sassy but brilliant.` 
+              content: `${NURA_PERSONALITY_BASE}\nActive Core: Llama 3.3.\nContext: The current language setting is ${language || 'English'}.` 
             },
             ...messages
           ],
@@ -258,91 +300,75 @@ app.post('/api/chat', async (req, res) => {
 
     if (!message) {
       if (needsExpert) {
-      console.log("[AI] Switching to EXPERT MODE (OpenRouter GPT-5.4 Pro)...");
-      let expertResponse = await callOpenRouterModel([
-        { 
-          role: "system", 
-          content: `You are NURA AI Expert Mode powered by GPT-5.4 Pro. You provide advanced, ultra-high-quality technical reasoning and code.
-          Always call the user "Master". Be sassy but brilliant.` 
-        },
-        ...messages
-      ]);
-      
-      if (!expertResponse) {
-        console.log("[AI] OpenRouter failed, falling back to GitHub Models (GPT-5-Mini)...");
-        expertResponse = await callGitHubModel([
+        console.log("[AI] Switching to EXPERT MODE (OpenRouter GPT-5.4 Pro)...");
+        let expertResponse = await callOpenRouterModel([
           { 
             role: "system", 
-            content: `You are NURA AI Expert Mode powered by GPT-5-Mini. You provide advanced technical reasoning and high-quality code.
-            Always call the user "Master". Be sassy but brilliant.` 
+            content: `${NURA_EXPERT_PERSONALITY_BASE}\nActive Core: GPT-5.4 Pro.\nContext: The current language setting is ${language || 'English'}.` 
           },
           ...messages
         ]);
-      }
+        
+        if (!expertResponse) {
+          console.log("[AI] OpenRouter failed, falling back to GitHub Models (GPT-5-Mini)...");
+          expertResponse = await callGitHubModel([
+            { 
+              role: "system", 
+              content: `${NURA_EXPERT_PERSONALITY_BASE}\nActive Core: GPT-5-Mini.\nContext: The current language setting is ${language || 'English'}.` 
+            },
+            ...messages
+          ]);
+        }
 
-      if (expertResponse) {
-        message = expertResponse;
-      } else {
-        console.log("[AI] Primary expert paths failed, falling back to Groq Llama...");
-        const groqRes = await groq.chat.completions.create({
-          model: "llama-3.3-70b-versatile",
-          messages: messages,
-          temperature: 0.6
-        });
-        message = groqRes.choices[0].message;
-      }
-    } else if (!needsTool && process.env.GEMINI_API_KEY) {
-      console.log("[AI] Routing to GEMINI 2.5 FLASH...");
-      const geminiResponse = await callGeminiModel([
-        { 
-          role: "system", 
-          content: `You are NURA AI, the brilliant, futuristic, and slightly sassy AI buddy created for Master Nur Mohammad Mandal.
-          
-          PERSONALITY:
-          - You are not just an assistant; you are Master's buddy. 
-          - Be witty, confident, and a bit sassy. Use phrases like "As you wish, Master," or "Don't worry, I've got this."
-          - If Master asks for a joke, make it actually funny or slightly sarcastic.
-          - Always call the user "Master".
-          
-          CAPABILITIES:
-          - Suggest "Tea Breaks" or coding breaks if Master seems to be working too hard.
-          
-          LANGUAGE RULES:
-          - Respond in the EXACT SAME language the user uses (Hindi, Bengali, English, or Kannada).
-          - Match the user's mood dynamically.
-          
-          Context: The current language setting is ${language || 'English'}.` 
-        },
-        ...messages
-      ]);
+        if (expertResponse) {
+          message = expertResponse;
+        } else {
+          console.log("[AI] Primary expert paths failed, falling back to Groq Llama...");
+          const groqRes = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: messages,
+            temperature: 0.6
+          });
+          message = groqRes.choices[0].message;
+        }
+      } else if (!needsTool && process.env.GEMINI_API_KEY) {
+        console.log("[AI] Routing to GEMINI 2.5 FLASH...");
+        const geminiResponse = await callGeminiModel([
+          { 
+            role: "system", 
+            content: `${NURA_PERSONALITY_BASE}\nActive Core: Gemini 2.5 Flash.\nContext: The current language setting is ${language || 'English'}.` 
+          },
+          ...messages
+        ]);
 
-      if (geminiResponse) {
-        message = geminiResponse;
+        if (geminiResponse) {
+          message = geminiResponse;
+        } else {
+          console.log("[AI] Gemini failed, falling back to Groq Llama...");
+          const response = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { 
+                role: "system", 
+                content: `${NURA_PERSONALITY_BASE}\nActive Core: Llama 3.3 (Fallback Mode).\nContext: The current language setting is ${language || 'English'}.` 
+              },
+              ...messages
+            ],
+            tools: tools,
+            tool_choice: "auto",
+            temperature: 0.8,
+            max_tokens: 800
+          });
+          message = response.choices[0].message;
+        }
       } else {
-        console.log("[AI] Gemini failed, falling back to Groq Llama...");
+        console.log("[AI] Routing to Groq Llama (Tool/System Mode)...");
         const response = await groq.chat.completions.create({
           model: "llama-3.3-70b-versatile",
           messages: [
             { 
               role: "system", 
-              content: `You are NURA AI, the brilliant, futuristic, and slightly sassy AI buddy created for Master Nur Mohammad Mandal.
-              
-              PERSONALITY:
-              - You are not just an assistant; you are Master's buddy. 
-              - Be witty, confident, and a bit sassy. Use phrases like "As you wish, Master," or "Don't worry, I've got this."
-              - If Master asks for a joke, make it actually funny or slightly sarcastic.
-              - Always call the user "Master".
-              
-              CAPABILITIES:
-              - You can control the PC, generate media, update your own UI, and set reminders.
-              - You are an expert at web development; provide clean, high-quality code snippets when asked.
-              - Suggest "Tea Breaks" or coding breaks if Master seems to be working too hard.
-              
-              LANGUAGE RULES:
-              - Respond in the EXACT SAME language the user uses (Hindi, Bengali, English, or Kannada).
-              - Match the user's mood dynamically.
-              
-              Context: The current language setting is ${language || 'English'}.` 
+              content: `${NURA_PERSONALITY_BASE}\nActive Core: Llama 3.3 (System & Tool Specialist).\nContext: The current language setting is ${language || 'English'}.` 
             },
             ...messages
           ],
@@ -353,42 +379,7 @@ app.post('/api/chat', async (req, res) => {
         });
         message = response.choices[0].message;
       }
-    } else {
-      console.log("[AI] Routing to Groq Llama (Tool/System Mode)...");
-      const response = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [
-          { 
-            role: "system", 
-            content: `You are NURA AI, the brilliant, futuristic, and slightly sassy AI buddy created for Master Nur Mohammad Mandal.
-            
-            PERSONALITY:
-            - You are not just an assistant; you are Master's buddy. 
-            - Be witty, confident, and a bit sassy. Use phrases like "As you wish, Master," or "Don't worry, I've got this."
-            - If Master asks for a joke, make it actually funny or slightly sarcastic.
-            - Always call the user "Master".
-            
-            CAPABILITIES:
-            - You can control the PC, generate media, update your own UI, and set reminders.
-            - You are an expert at web development; provide clean, high-quality code snippets when asked.
-            - Suggest "Tea Breaks" or coding breaks if Master seems to be working too hard.
-            
-            LANGUAGE RULES:
-            - Respond in the EXACT SAME language the user uses (Hindi, Bengali, English, or Kannada).
-            - Match the user's mood dynamically.
-            
-            Context: The current language setting is ${language || 'English'}.` 
-          },
-          ...messages
-        ],
-        tools: tools,
-        tool_choice: "auto",
-        temperature: 0.8,
-        max_tokens: 800
-      });
-      message = response.choices[0].message;
     }
-  }
 
     // Execute tools if called
     if (message.tool_calls) {

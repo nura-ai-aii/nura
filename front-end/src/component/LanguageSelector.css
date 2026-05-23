@@ -90,3 +90,18 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 768px) {
+  .language-menu {
+    bottom: auto !important;
+    top: 55px !important;
+    left: auto !important;
+    right: 0 !important;
+    animation: slideDownMobile 0.3s ease-out !important;
+  }
+}
+
+@keyframes slideDownMobile {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

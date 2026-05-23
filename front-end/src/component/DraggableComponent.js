@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './DraggableComponent.css';
 import { emitAlert } from './AlertSystem';
 
-export default function DraggableComponent({ children, id, initialPos = { bottom: 30, right: 30 } }) {
+export default function DraggableComponent({ children, id, className = '', initialPos = { bottom: 30, right: 30 }, useGridByDefault = false }) {
   // Load saved position
   const getInitialPos = () => {
     try {
@@ -20,6 +20,13 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
   const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
   const [isSaved, setIsSaved] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [hasSaved, setHasSaved] = useState(() => {
+    try {
+      return localStorage.getItem(`nura_pos_${id}`) !== null;
+    } catch (e) {
+      return false;
+    }
+  });
   
   const dragStart = useRef({ x: 0, y: 0, initRight: 0, initBottom: 0 });
   const containerRef = useRef(null);
@@ -51,6 +58,21 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
 
   const startMove = (e) => {
     if (e) e.stopPropagation();
+    
+    // Smooth transition from relative grid to fixed dragging without jumping
+    if (useGridByDefault && !hasSaved) {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const newPos = {
+          right: viewportWidth - rect.right,
+          bottom: viewportHeight - rect.bottom
+        };
+        setPosition(newPos);
+      }
+    }
+    
     setIsMoveMode(true);
     setShowMenu(false);
   };
@@ -65,6 +87,7 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
       setIsMoveMode(false);
       setIsDragging(false);
       localStorage.setItem(`nura_pos_${id}`, JSON.stringify(position));
+      setHasSaved(true);
       setShowMenu(false);
       
       // Visual feedback
@@ -77,6 +100,22 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
     } catch (err) {
       console.error("Save failed:", err);
       emitAlert('SAVE_ERROR', 'ENCRYPTION FAILURE: POSITION NOT SAVED', true);
+    }
+  };
+
+  const resetPosition = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    try {
+      localStorage.removeItem(`nura_pos_${id}`);
+      setHasSaved(false);
+      setPosition(initialPos);
+      setShowMenu(false);
+      emitAlert('POSITION_RESET', `${id.toUpperCase().replace('WIDGET-', '')} RETURNED TO GRID`, false);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -123,7 +162,7 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
   return (
     <div 
       ref={containerRef}
-      className={`draggable-wrapper ${isMoveMode ? 'move-mode' : ''} ${isDragging ? 'dragging' : ''} ${isSaved ? 'saved' : ''}`}
+      className={`draggable-wrapper ${className} ${isMoveMode ? 'move-mode' : ''} ${isDragging ? 'dragging' : ''} ${isSaved ? 'saved' : ''}`}
       onContextMenu={handleContextMenu}
       onMouseDown={handleMouseDown}
       style={isMobile ? {
@@ -134,6 +173,11 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
         width: '100%',
         margin: '10px 0',
         zIndex: id === 'plasma-orb' ? 1000 : 900
+      } : (useGridByDefault && !hasSaved && !isMoveMode && !isDragging) ? {
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        zIndex: 900
       } : {
         position: 'fixed',
         bottom: position.bottom + 'px',
@@ -152,7 +196,12 @@ export default function DraggableComponent({ children, id, initialPos = { bottom
           style={{ position: 'fixed', top: menuPos.y, left: menuPos.x }}
         >
           {!isMoveMode ? (
-            <button onMouseDown={startMove}>◆ MOVE COMPONENT</button>
+            <>
+              <button onMouseDown={startMove}>◆ MOVE COMPONENT</button>
+              {hasSaved && (
+                <button onMouseDown={resetPosition}>↺ RESET POSITION</button>
+              )}
+            </>
           ) : (
             <button onMouseDown={savePosition}>✔ SAVE POSITION</button>
           )}

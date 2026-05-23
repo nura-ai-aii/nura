@@ -137,3 +137,24 @@
     transform: translate(-50%, 0);
   }
 }
+
+@media (max-width: 768px) {
+  .model-menu {
+    bottom: auto !important;
+    top: 55px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    animation: slideDownMobileModel 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+}
+
+@keyframes slideDownMobileModel {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

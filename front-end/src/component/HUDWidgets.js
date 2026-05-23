@@ -502,39 +502,39 @@ export default function HUDWidgets({ apiStatus, apiHealth, visible, onClose }) {
 
       {/* Widget Grid */}
       <div className="hud-grid">
-        <DraggableComponent id="widget-stats" initialPos={{ bottom: 150, right: 1550 }}>
+        <DraggableComponent id="widget-stats" initialPos={{ bottom: 150, right: 1550 }} useGridByDefault={true}>
           <SystemStats apiStatus={apiStatus} />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-radar" initialPos={{ bottom: 150, right: 1250 }}>
+        <DraggableComponent id="widget-radar" className="radar-widget-wrap" initialPos={{ bottom: 150, right: 1250 }} useGridByDefault={true}>
           <JarvisRadar />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-device" initialPos={{ bottom: 150, right: 950 }}>
+        <DraggableComponent id="widget-device" initialPos={{ bottom: 150, right: 950 }} useGridByDefault={true}>
           <DeviceWidgets apiStatus={apiStatus} />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-map" initialPos={{ bottom: 150, right: 650 }}>
+        <DraggableComponent id="widget-map" className="map-widget-wrap" initialPos={{ bottom: 150, right: 650 }} useGridByDefault={true}>
           <JarvisMap />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-health" initialPos={{ bottom: 150, right: 350 }}>
+        <DraggableComponent id="widget-health" initialPos={{ bottom: 150, right: 350 }} useGridByDefault={true}>
           <ServiceHealth apiStatus={apiStatus} apiHealth={apiHealth} />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-clock" initialPos={{ bottom: 550, right: 1550 }}>
+        <DraggableComponent id="widget-clock" initialPos={{ bottom: 550, right: 1550 }} useGridByDefault={true}>
           <JarvisClock />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-date" initialPos={{ bottom: 550, right: 1250 }}>
+        <DraggableComponent id="widget-date" initialPos={{ bottom: 550, right: 1250 }} useGridByDefault={true}>
           <JarvisDate />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-tactical" initialPos={{ bottom: 550, right: 950 }}>
+        <DraggableComponent id="widget-tactical" initialPos={{ bottom: 550, right: 950 }} useGridByDefault={true}>
           <TacticalAnalysis />
         </DraggableComponent>
 
-        <DraggableComponent id="widget-neural" initialPos={{ bottom: 550, right: 650 }}>
+        <DraggableComponent id="widget-neural" initialPos={{ bottom: 550, right: 650 }} useGridByDefault={true}>
           <NeuralLink />
         </DraggableComponent>
       </div>
