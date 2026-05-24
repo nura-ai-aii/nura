@@ -210,6 +210,41 @@ export default function HwPlasmaOrb({
   const isThinking = interactionState === 'THINKING';
   const isSpeakingState = interactionState === 'SPEAKING';
 
+  // Dynamic Microphone Styles mapping to Design tokens
+  const getMicStyle = () => {
+    if (isThinking) {
+      return {
+        background: 'linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(123, 97, 255, 0.2))',
+        border: '2.5px solid #00D9FF',
+        color: '#00D9FF',
+        boxShadow: '0 0 25px rgba(0, 217, 255, 0.65)'
+      };
+    }
+    if (isSpeakingState) {
+      return {
+        background: 'linear-gradient(135deg, rgba(255, 107, 0, 0.2), rgba(255, 176, 0, 0.2))',
+        border: '2.5px solid #FF6B00',
+        color: '#FF6B00',
+        boxShadow: '0 0 25px rgba(255, 107, 0, 0.65)'
+      };
+    }
+    if (micActive) {
+      return {
+        background: 'rgba(255, 107, 0, 0.15)',
+        border: '2.5px solid #FF6B00',
+        color: '#FF6B00',
+        boxShadow: '0 0 22px rgba(255, 107, 0, 0.55)'
+      };
+    }
+    // Idle state
+    return {
+      background: 'rgba(0, 217, 255, 0.1)',
+      border: '2.5px solid #00D9FF',
+      color: '#00D9FF',
+      boxShadow: '0 0 18px rgba(0, 217, 255, 0.35)'
+    };
+  };
+
   return (
     <div 
       className={`robot-helper-container ${isThinking ? 'thinking' : ''} ${isSpeakingState ? 'speaking' : ''} ${micActive ? 'listening' : ''}`}
@@ -226,7 +261,7 @@ export default function HwPlasmaOrb({
       }}
     >
       <div className="robot-viewport">
-        {/* Holographic Glowing Pedestal Background Ring */}
+        {/* Holographic Glowing Pedestal Background Ring (Cyan wireframe style) */}
         <div className="pedestal-hologram"></div>
         
         {/* Cloud data-stream rings representing tech node connections */}
@@ -262,7 +297,8 @@ export default function HwPlasmaOrb({
         <button
           id="mic-toggle-btn"
           onClick={toggleMic}
-          className={`robot-mic-btn ${micActive ? 'active' : ''}`}
+          className={`robot-mic-btn`}
+          style={getMicStyle()}
           aria-label={micActive ? "Stop microphone" : "Start microphone"}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -301,7 +337,7 @@ export default function HwPlasmaOrb({
         )}
         
         {micError && <p className="robot-mic-error">{micError}</p>}
-        <p className="robot-status-text">
+        <p className={`robot-status-text ${isThinking ? 'thinking' : isSpeakingState ? 'speaking' : micActive ? 'listening' : ''}`}>
           {isThinking ? "thinking..." : isSpeakingState ? "speaking..." : micActive ? "listening" : "tap to speak"}
         </p>
       </div>
@@ -335,18 +371,18 @@ export default function HwPlasmaOrb({
           width: 100%;
           height: 100%;
           object-fit: contain;
-          filter: drop-shadow(0 0 15px rgba(255, 85, 0, 0.2));
+          filter: drop-shadow(0 0 15px rgba(0, 245, 255, 0.35)); /* Cyan wireframe body glow */
           transition: transform 0.15s ease;
         }
 
         .robot-helper-container.speaking .robot-body-img {
           animation: armWobble 0.25s infinite alternate;
-          filter: drop-shadow(0 0 25px rgba(255, 85, 0, 0.45));
+          filter: drop-shadow(0 0 25px rgba(255, 107, 0, 0.5)); /* Speak orange boost glow */
         }
 
         .robot-helper-container.thinking .robot-body-img {
           animation: thinkingPulse 0.4s infinite alternate;
-          filter: drop-shadow(0 0 30px rgba(255, 85, 0, 0.6));
+          filter: drop-shadow(0 0 30px rgba(0, 245, 255, 0.7)); /* Pulse glow */
         }
 
         /* Continuous Bobbing */
@@ -366,7 +402,7 @@ export default function HwPlasmaOrb({
           100% { transform: scale(1.06) translateY(-4px); opacity: 1; }
         }
 
-        /* Glowing mechanical eyes */
+        /* Glowing mechanical eyes (7DF9FF eye glow) */
         .glowing-eyes-overlay {
           position: absolute;
           top: 31%;
@@ -384,15 +420,20 @@ export default function HwPlasmaOrb({
         .eye {
           width: 12px;
           height: 12px;
-          background: #ff5500;
+          background: #7DF9FF;
           border-radius: 50%;
-          box-shadow: 0 0 10px #ff5500, 0 0 20px #ff5500;
+          box-shadow: 0 0 10px #7DF9FF, 0 0 20px #7DF9FF;
           animation: blinkEye 4s infinite;
         }
 
+        .robot-helper-container.speaking .eye {
+          background: #FF8C00 !important;
+          box-shadow: 0 0 12px #FF8C00, 0 0 22px #FF8C00 !important;
+        }
+
         .robot-helper-container.thinking .eye {
-          background: #ffaa00 !important;
-          box-shadow: 0 0 12px #ffaa00, 0 0 22px #ffaa00 !important;
+          background: #7B61FF !important;
+          box-shadow: 0 0 12px #7B61FF, 0 0 22px #7B61FF !important;
         }
 
         @keyframes blinkEye {
@@ -400,16 +441,16 @@ export default function HwPlasmaOrb({
           97.5% { transform: scaleY(0.1); }
         }
 
-        /* Holographic pedestal at base */
+        /* Holographic pedestal at base (Cyan #00F5FF) */
         .pedestal-hologram {
           position: absolute;
           bottom: 25px;
           width: 130px;
           height: 25px;
           border-radius: 50%;
-          border: 2px dashed rgba(255, 85, 0, 0.4);
-          background: radial-gradient(ellipse at center, rgba(255, 85, 0, 0.15) 0%, rgba(255, 85, 0, 0) 70%);
-          box-shadow: 0 0 20px rgba(255, 85, 0, 0.35);
+          border: 2px dashed rgba(0, 245, 255, 0.45);
+          background: radial-gradient(ellipse at center, rgba(0, 245, 255, 0.15) 0%, rgba(0, 245, 255, 0) 70%);
+          box-shadow: 0 0 20px rgba(0, 245, 255, 0.35);
           animation: spinPedestal 12s linear infinite;
           transform: rotateX(70deg);
           z-index: 1;
@@ -420,15 +461,15 @@ export default function HwPlasmaOrb({
           to { transform: rotateX(70deg) rotate(360deg); }
         }
 
-        /* Jet Booster Light Stream */
+        /* Jet Booster Light Stream (Orange accent streams) */
         .jet-booster-stream {
           position: absolute;
           bottom: 45px;
           width: 14px;
           height: 70px;
-          background: linear-gradient(180deg, #ff5500 0%, rgba(255, 170, 0, 0.5) 40%, rgba(255, 85, 0, 0) 100%);
+          background: linear-gradient(180deg, #FF6B00 0%, rgba(255, 176, 0, 0.5) 40%, rgba(255, 107, 0, 0) 100%);
           border-radius: 4px;
-          box-shadow: 0 0 15px rgba(255, 85, 0, 0.6);
+          box-shadow: 0 0 15px rgba(255, 107, 0, 0.6);
           animation: streamFlicker 0.15s infinite alternate;
           z-index: 2;
           transform-origin: top;
@@ -436,8 +477,8 @@ export default function HwPlasmaOrb({
 
         .robot-helper-container.speaking .jet-booster-stream {
           height: 90px;
-          background: linear-gradient(180deg, #ff5500 0%, #ffaa00 50%, rgba(255, 85, 0, 0) 100%);
-          box-shadow: 0 0 25px rgba(255, 85, 0, 0.85);
+          background: linear-gradient(180deg, #FF6B00 0%, #FFB000 50%, rgba(255, 107, 0, 0) 100%);
+          box-shadow: 0 0 25px rgba(255, 107, 0, 0.85);
         }
 
         @keyframes streamFlicker {
@@ -451,7 +492,7 @@ export default function HwPlasmaOrb({
           width: 220px;
           height: 180px;
           border-radius: 50%;
-          border: 1px dashed rgba(255, 85, 0, 0.15);
+          border: 1px dashed rgba(0, 245, 255, 0.15);
           animation: rotateTech 25s linear infinite;
           z-index: 0;
           opacity: 0.6;
@@ -475,28 +516,15 @@ export default function HwPlasmaOrb({
           width: 50px;
           height: 50px;
           border-radius: 50%;
-          border: 2px solid #ff5500;
-          background: rgba(255, 85, 0, 0.1);
-          color: #ff5500;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 0 15px rgba(255, 85, 0, 0.3);
         }
 
         .robot-mic-btn:hover {
-          background: rgba(255, 85, 0, 0.2);
-          box-shadow: 0 0 22px rgba(255, 85, 0, 0.6);
           transform: scale(1.05);
-        }
-
-        .robot-mic-btn.active {
-          background: rgba(255, 85, 0, 0.25);
-          box-shadow: 0 0 25px #ff5500, inset 0 0 10px rgba(255, 85, 0, 0.3);
-          border-color: #ffaa00;
-          color: #ffaa00;
         }
 
         .robot-audio-waves {
@@ -509,7 +537,7 @@ export default function HwPlasmaOrb({
 
         .wave-bar {
           width: 3px;
-          background: #ff5500;
+          background: #FF6B00;
           border-radius: 2px;
           animation: wBounce 0.4s ease-in-out infinite alternate;
         }
@@ -527,7 +555,6 @@ export default function HwPlasmaOrb({
         }
 
         .robot-status-text {
-          color: #ff5500;
           font-family: 'Rajdhani', sans-serif;
           font-size: 11px;
           font-weight: 700;
@@ -535,7 +562,19 @@ export default function HwPlasmaOrb({
           text-transform: uppercase;
           margin: 0;
           opacity: 0.8;
-          text-shadow: 0 0 8px rgba(255, 85, 0, 0.3);
+          color: #00D9FF;
+          text-shadow: 0 0 8px rgba(0, 217, 255, 0.3);
+          transition: all 0.25s ease;
+        }
+
+        .robot-status-text.listening, .robot-status-text.speaking {
+          color: #FF6B00;
+          text-shadow: 0 0 8px rgba(255, 107, 0, 0.35);
+        }
+
+        .robot-status-text.thinking {
+          color: #7B61FF;
+          text-shadow: 0 0 8px rgba(123, 97, 255, 0.35);
         }
       `}</style>
     </div>
