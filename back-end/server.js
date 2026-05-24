@@ -613,13 +613,20 @@ app.post('/api/tts', async (req, res) => {
   const isBengali = /[\u0980-\u09FF]/.test(text);
   const isKannada = /[\u0C80-\u0CFF]/.test(text);
 
-  if (isHindi) voice = 'hi-IN-MadhurNeural';
-  else if (isBengali) voice = 'bn-IN-BashkarNeural';
-  else if (isKannada) voice = 'kn-IN-GaganNeural';
-  else if (requestedLang?.startsWith('en-IN')) voice = 'en-IN-PrabhatNeural';
-  else if (requestedLang?.startsWith('bn-IN')) voice = 'bn-IN-BashkarNeural';
-  else if (requestedLang?.startsWith('hi-IN')) voice = 'hi-IN-MadhurNeural';
-  else if (requestedLang?.startsWith('kn-IN')) voice = 'kn-IN-GaganNeural';
+  if (isHindi) {
+    voice = 'hi-IN-MadhurNeural';
+  } else if (isBengali) {
+    voice = 'bn-IN-BashkarNeural';
+  } else if (isKannada) {
+    voice = 'kn-IN-GaganNeural';
+  } else {
+    // If the text is written in English/Roman characters, choose English voices based on requested locale
+    if (requestedLang?.startsWith('en-IN') || requestedLang?.startsWith('hi-IN') || requestedLang?.startsWith('bn-IN') || requestedLang?.startsWith('kn-IN')) {
+      voice = 'en-IN-PrabhatNeural'; // Highly natural Indian English accent
+    } else {
+      voice = 'en-US-GuyNeural';
+    }
+  }
 
   try {
     const tts = new MsEdgeTTS();
