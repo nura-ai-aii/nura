@@ -423,3 +423,53 @@ body {
   letter-spacing: 2px;
   color: rgba(255, 255, 255, 0.3);
 }
+
+/* ──────────────────────────────────────────────
+   MOOD SPECIFIC SYSTEM OVERRIDES (HW MODE)
+   ────────────────────────────────────────────── */
+body.mood-hw-body {
+  background-image: url('./images/hw-background.png') !important;
+  --neon-cyan: #ff5500 !important;
+  --neon-blue: #ffaa00 !important;
+  scrollbar-color: #ff5500 transparent !important;
+}
+
+body.mood-hw-body .startup-container {
+  border-top-color: #ff5500 !important;
+  box-shadow: 0 0 50px rgba(255, 85, 0, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.6) !important;
+}
+
+body.mood-hw-body .startup-header {
+  color: #ff5500 !important;
+  text-shadow: 0 0 10px rgba(255, 85, 0, 0.4) !important;
+}
+
+body.mood-hw-body .startup-dot-glow {
+  background: #ff5500 !important;
+  box-shadow: 0 0 10px #ff5500 !important;
+}
+
+body.mood-hw-body .startup-progress-bar {
+  background: linear-gradient(90deg, #ffaa00, #ff5500) !important;
+  box-shadow: 0 0 12px #ff5500 !important;
+}
+
+body.mood-hw-body .startup-loader-glow {
+  background: #ff5500 !important;
+  box-shadow: 0 0 15px #ff5500, 0 0 25px #ff5500 !important;
+}
+
+body.mood-hw-body .terminal-prompt {
+  color: #ff5500 !important;
+}
+
+body.mood-hw-body .log-highlight {
+  color: #ff5500 !important;
+  text-shadow: 0 0 12px rgba(255, 85, 0, 0.8) !important;
+}
+
+/* HW Custom collapsed ambient background */
+.App.background-assistant-mode.mood-hw {
+  background: radial-gradient(circle at center, rgba(35, 12, 2, 0.98) 0%, rgba(12, 4, 0, 1) 100%) !important;
+}
+

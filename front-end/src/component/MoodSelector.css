@@ -1,0 +1,204 @@
+.mood-selector-container {
+  position: relative;
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.mood-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(0, 255, 225, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 255, 225, 0.1), inset 0 0 10px rgba(0, 255, 225, 0.05);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  overflow: hidden;
+}
+
+.mood-fab-icon {
+  transition: all 0.35s ease;
+  filter: drop-shadow(0 0 3px rgba(0, 255, 225, 0.4));
+}
+
+.mood-fab:hover {
+  border-color: #00ffe1;
+  box-shadow: 0 0 20px rgba(0, 255, 225, 0.45), inset 0 0 15px rgba(0, 255, 225, 0.1);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.mood-fab:hover .mood-fab-icon {
+  transform: rotate(180deg);
+  filter: drop-shadow(0 0 8px rgba(0, 255, 225, 0.9));
+}
+
+/* HW active styling for FAB */
+.mood-fab.mood-hw {
+  border-color: rgba(255, 85, 0, 0.3);
+  box-shadow: 0 0 15px rgba(255, 85, 0, 0.15), inset 0 0 10px rgba(255, 85, 0, 0.05);
+}
+
+.mood-fab.mood-hw:hover {
+  border-color: #ff5500;
+  box-shadow: 0 0 22px rgba(255, 85, 0, 0.5), inset 0 0 15px rgba(255, 85, 0, 0.15);
+}
+
+.mood-fab.mood-hw:hover .mood-fab-icon {
+  filter: drop-shadow(0 0 8px rgba(255, 85, 0, 0.9));
+}
+
+.mood-fab.active.mood-scifi {
+  background: rgba(0, 255, 225, 0.15);
+  border-color: #00ffe1;
+  box-shadow: 0 0 25px rgba(0, 255, 225, 0.6), inset 0 0 10px rgba(0, 255, 225, 0.2);
+}
+
+.mood-fab.active.mood-hw {
+  background: rgba(255, 85, 0, 0.18);
+  border-color: #ff5500;
+  box-shadow: 0 0 25px rgba(255, 85, 0, 0.6), inset 0 0 10px rgba(255, 85, 0, 0.2);
+}
+
+.mood-menu {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8, 12, 24, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(0, 255, 225, 0.4);
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 175px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 255, 225, 0.1);
+  animation: slideUpMood 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+
+.mood-menu-header {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 9px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 10px 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.mood-option {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 5px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mood-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.mood-dot.dot-scifi {
+  background: rgba(0, 255, 225, 0.3);
+}
+
+.mood-dot.dot-hw {
+  background: rgba(255, 85, 0, 0.3);
+}
+
+.mood-option:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mood-option:hover .mood-dot.dot-scifi {
+  background: #00ffe1;
+  box-shadow: 0 0 8px #00ffe1;
+}
+
+.mood-option:hover .mood-dot.dot-hw {
+  background: #ff5500;
+  box-shadow: 0 0 8px #ff5500;
+}
+
+.mood-option.selected {
+  font-weight: 700;
+}
+
+.mood-option.selected:has(.dot-scifi) {
+  background: rgba(0, 255, 225, 0.12);
+  color: #00ffe1;
+  text-shadow: 0 0 8px rgba(0, 255, 225, 0.4);
+}
+
+.mood-option.selected:has(.dot-hw) {
+  background: rgba(255, 85, 0, 0.12);
+  color: #ff5500;
+  text-shadow: 0 0 8px rgba(255, 85, 0, 0.4);
+}
+
+.mood-option.selected .mood-dot.dot-scifi {
+  background: #00ffe1;
+  box-shadow: 0 0 8px #00ffe1;
+}
+
+.mood-option.selected .mood-dot.dot-hw {
+  background: #ff5500;
+  box-shadow: 0 0 8px #ff5500;
+}
+
+@keyframes slideUpMood {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .mood-menu {
+    bottom: auto !important;
+    top: 55px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    animation: slideDownMobileMood 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+}
+
+@keyframes slideDownMobileMood {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

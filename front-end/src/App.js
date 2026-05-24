@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import Nabbar from './component/Nabbar';
 import PlasmaOrb from './component/blob';
+import HwPlasmaOrb from './component/hw-blob';
 import Terminal from './component/Terminal';
 import Status from './component/Status';
 import LanguageSelector from './component/LanguageSelector';
 import ModelSelector from './component/ModelSelector';
+import MoodSelector from './component/MoodSelector';
 import HUDWidgets from './component/HUDWidgets';
 import AlertSystem, { emitAlert } from './component/AlertSystem';
 import DraggableComponent from './component/DraggableComponent';
@@ -115,6 +117,7 @@ function App() {
   const [backgroundWakeWordMode, setBackgroundWakeWordMode] = useState(
     localStorage.getItem('nura_backgroundWakeWordMode') === 'true'
   );
+  const [activeMood, setActiveMood] = useState(localStorage.getItem('nura_activeMood') || 'scifi');
   const [isStarting, setIsStarting] = useState(() => {
     return sessionStorage.getItem('nura_booted') !== 'true';
   });
@@ -153,6 +156,16 @@ function App() {
   }, [checkHealth]);
 
 
+  // Sync body background class with active mood
+  useEffect(() => {
+    if (activeMood === 'hw') {
+      document.body.classList.add('mood-hw-body');
+    } else {
+      document.body.classList.remove('mood-hw-body');
+    }
+    localStorage.setItem('nura_activeMood', activeMood);
+  }, [activeMood]);
+
   // Persist settings
   useEffect(() => {
     localStorage.setItem('nura_blobColor', blobColor);
@@ -168,8 +181,8 @@ function App() {
     setBackgroundWakeWordMode(nextVal);
     
     if (nextVal) {
-      emitAlert('SYS_WAKEWORD', "I GOT YOU. LISTENING IN THE BACKGROUND! 👂", false);
-      speakResponse("Background assistant mode engaged. Master, I will be listening in the background.", speechLang);
+      emitAlert('SYS_WAKEWORD', "MOOD CHANGING ACTIVE: MINIMAL HUD ENGAGED! 🎭", false);
+      speakResponse("Mood changing mode engaged. Master, I will be listening in the background.", speechLang);
       setInteractionState(STATE.LISTENING);
     } else {
       emitAlert('SYS_CONSOLE', 'FULL HUD RESTORED. SYMMETRY IS BACK, MASTER! ✨', false);
@@ -364,17 +377,31 @@ function App() {
       )}
 
       <DraggableComponent id="plasma-orb" initialPos={{ bottom: 30, right: 30 }}>
-        <PlasmaOrb
-          color={blobColor}
-          size={blobSize}
-          sensitivity={blobSensitivity}
-          setTranscript={setTranscript}
-          setIsListening={(val) => setInteractionState(val ? STATE.LISTENING : STATE.IDLE)}
-          speechLang={speechLang}
-          isSpeaking={isSpeaking}
-          interactionState={interactionState}
-          interactionCount={interactionCount}
-        />
+        {activeMood === 'hw' ? (
+          <HwPlasmaOrb
+            color={blobColor}
+            size={blobSize}
+            sensitivity={blobSensitivity}
+            setTranscript={setTranscript}
+            setIsListening={(val) => setInteractionState(val ? STATE.LISTENING : STATE.IDLE)}
+            speechLang={speechLang}
+            isSpeaking={isSpeaking}
+            interactionState={interactionState}
+            interactionCount={interactionCount}
+          />
+        ) : (
+          <PlasmaOrb
+            color={blobColor}
+            size={blobSize}
+            sensitivity={blobSensitivity}
+            setTranscript={setTranscript}
+            setIsListening={(val) => setInteractionState(val ? STATE.LISTENING : STATE.IDLE)}
+            speechLang={speechLang}
+            isSpeaking={isSpeaking}
+            interactionState={interactionState}
+            interactionCount={interactionCount}
+          />
+        )}
       </DraggableComponent>
 
       {!backgroundWakeWordMode && (
@@ -405,7 +432,13 @@ function App() {
         </DraggableComponent>
       )}
 
-      <DraggableComponent id="bg-toggle-selector" initialPos={{ bottom: 30, right: backgroundWakeWordMode ? 100 : 520 }}>
+      {!backgroundWakeWordMode && (
+        <DraggableComponent id="mood-selector" initialPos={{ bottom: 30, right: 520 }}>
+          <MoodSelector activeMood={activeMood} setActiveMood={setActiveMood} />
+        </DraggableComponent>
+      )}
+
+      <DraggableComponent id="bg-toggle-selector" initialPos={{ bottom: 30, right: backgroundWakeWordMode ? 100 : 580 }}>
         <BackgroundModeToggle active={backgroundWakeWordMode} onClick={toggleBackgroundMode} />
       </DraggableComponent>
 
