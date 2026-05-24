@@ -1,28 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
-  --neon-cyan: #00D9FF;
-  --neon-cyan-glow: #00F5FF;
-  --neon-blue: #00B8D4;
+  --neon-cyan: #00ffe1;
+  --neon-blue: #0066ff;
   --bg-deep: #020617;
-  --bg-darker: #000814;
-  --bg-solid-black: #010409;
-  --bg-cyber-blue: #07111f;
-  
-  --orange-accent: #FF6B00;
-  --orange-bright: #FF8C00;
-  --orange-gold: #FFB000;
-  
-  --terminal-green: #00FF9C;
-  --terminal-green-bright: #00E676;
-  
-  --text-main: #E6F1FF;
-  --text-secondary: #8AA0B8;
-  --text-disabled: #4B5A6A;
-
-  --neon-active: var(--neon-cyan);
-  --neon-active-rgb: 0, 217, 255;
-  --glass-bg: rgba(0, 8, 20, 0.75);
+  --glass-bg: rgba(10, 15, 30, 0.6);
+  --text-main: #f8fafc;
 }
 
 * {
@@ -446,106 +429,47 @@ body {
    ────────────────────────────────────────────── */
 body.mood-hw-body {
   background-image: url('./images/hw-background.png') !important;
-  --neon-cyan: #00D9FF !important;
-  --neon-blue: #00B8D4 !important;
-  scrollbar-color: #00D9FF transparent !important;
+  --neon-cyan: #ff5500 !important;
+  --neon-blue: #ffaa00 !important;
+  scrollbar-color: #ff5500 transparent !important;
 }
 
 body.mood-hw-body .startup-container {
-  border-top-color: #00D9FF !important;
-  box-shadow: 0 0 50px rgba(0, 217, 255, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.6) !important;
+  border-top-color: #ff5500 !important;
+  box-shadow: 0 0 50px rgba(255, 85, 0, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.6) !important;
 }
 
 body.mood-hw-body .startup-header {
-  color: #00D9FF !important;
-  text-shadow: 0 0 10px rgba(0, 217, 255, 0.4) !important;
+  color: #ff5500 !important;
+  text-shadow: 0 0 10px rgba(255, 85, 0, 0.4) !important;
 }
 
 body.mood-hw-body .startup-dot-glow {
-  background: #00D9FF !important;
-  box-shadow: 0 0 10px #00D9FF !important;
+  background: #ff5500 !important;
+  box-shadow: 0 0 10px #ff5500 !important;
 }
 
 body.mood-hw-body .startup-progress-bar {
-  background: linear-gradient(90deg, #00B8D4, #00D9FF) !important;
-  box-shadow: 0 0 12px #00D9FF !important;
+  background: linear-gradient(90deg, #ffaa00, #ff5500) !important;
+  box-shadow: 0 0 12px #ff5500 !important;
 }
 
 body.mood-hw-body .startup-loader-glow {
-  background: #00D9FF !important;
-  box-shadow: 0 0 15px #00D9FF, 0 0 25px #00D9FF !important;
+  background: #ff5500 !important;
+  box-shadow: 0 0 15px #ff5500, 0 0 25px #ff5500 !important;
 }
 
 body.mood-hw-body .terminal-prompt {
-  color: #00D9FF !important;
+  color: #ff5500 !important;
 }
 
 body.mood-hw-body .log-highlight {
-  color: #00D9FF !important;
-  text-shadow: 0 0 12px rgba(0, 217, 255, 0.8) !important;
-}
-
-/* Perfect Navbar Style for HW Mode */
-body.mood-hw-body .navbar-background {
-  background: linear-gradient(90deg, rgba(0,0,0,0.95), rgba(5,10,25,0.95), rgba(0,0,0,0.95)) !important;
-  border-bottom: 1px solid rgba(0,245,255,0.35) !important;
-  border-top: none !important;
-  border-left: none !important;
-  box-shadow: 0 0 30px rgba(0,245,255,0.15) !important;
-  clip-path: none !important; /* Elegant classic navbar */
-}
-
-/* Panel Style overrides for all dashboard widgets and terminal in HW Mode */
-body.mood-hw-body .terminal-container,
-body.mood-hw-body .status-container,
-body.mood-hw-body .hud-widget-container,
-body.mood-hw-body .widget-card,
-body.mood-hw-body .model-menu,
-body.mood-hw-body .language-menu,
-body.mood-hw-body .mood-menu {
-  background: linear-gradient(135deg, rgba(0,10,25,0.88), rgba(5,15,35,0.92)) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
-  border: 1px solid rgba(0,245,255,0.2) !important;
-  border-left: 1px solid rgba(0,245,255,0.2) !important;
-  box-shadow: 0 0 25px rgba(0,245,255,0.12) !important;
-  clip-path: none !important; /* Clean cinematic contrast */
-}
-
-/* Button style overrides for all UI buttons in HW Mode */
-body.mood-hw-body .nav-button,
-body.mood-hw-body .lang-option,
-body.mood-hw-body .model-option,
-body.mood-hw-body .mood-option,
-body.mood-hw-body .feature-item {
-  background: linear-gradient(135deg, #001C2B, #00384F) !important;
-  border: 1px solid #00D9FF !important;
-  color: #00F5FF !important;
-  border-radius: 4px !important;
-  transition: all 0.25s ease !important;
-  text-shadow: none !important;
-  box-shadow: none !important;
-}
-
-body.mood-hw-body .nav-button:hover,
-body.mood-hw-body .lang-option:hover,
-body.mood-hw-body .model-option:hover,
-body.mood-hw-body .mood-option:hover,
-body.mood-hw-body .feature-item:hover,
-body.mood-hw-body .nav-button.active,
-body.mood-hw-body .lang-option.selected,
-body.mood-hw-body .model-option.selected,
-body.mood-hw-body .mood-option.selected,
-body.mood-hw-body .feature-item.selected {
-  box-shadow: 0 0 20px #00F5FF !important;
-  transform: translateY(-2px) !important;
-  background: linear-gradient(135deg, #00283d, #005070) !important;
-  color: #00F5FF !important;
-  border-color: #00F5FF !important;
+  color: #ff5500 !important;
+  text-shadow: 0 0 12px rgba(255, 85, 0, 0.8) !important;
 }
 
 /* HW Custom collapsed ambient background */
 .App.background-assistant-mode.mood-hw {
-  background: radial-gradient(circle at center, rgba(0, 8, 20, 0.98) 0%, rgba(2, 6, 23, 1) 100%) !important;
+  background: radial-gradient(circle at center, rgba(35, 12, 2, 0.98) 0%, rgba(12, 4, 0, 1) 100%) !important;
 }
 
