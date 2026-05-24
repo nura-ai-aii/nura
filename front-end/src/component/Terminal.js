@@ -178,7 +178,7 @@ export default function Terminal({
               <div className="terminal-section ai-section">
                 <div className="terminal-header ai-header">
                   {isProcessing && <span className="terminal-dot ai-dot"></span>}
-                  NURA_OUTPUT.SYS
+                  HEXPAR_OUTPUT.SYS
                 </div>
                 <div className="terminal-content ai-text">
                   {aiResponse}
@@ -228,7 +228,7 @@ export default function Terminal({
         /* 50 Classic Education Features tab */
         <div className="classic-features-wrapper">
           <div className="features-header">
-            <h3>NURA AI — Classic Education Features</h3>
+            <h3>Hexpar AI — Classic Education Features</h3>
             <p>Helpful for Teachers & Students. Select any core feature to initiate step-by-step assistance.</p>
           </div>
           <div className="classic-features-list">

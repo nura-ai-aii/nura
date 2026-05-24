@@ -411,7 +411,7 @@ function DeviceWidgets({ apiStatus }) {
 // ─── NEW: SERVICE HEALTH ──────────────────────────────────────
 function ServiceHealth({ apiStatus, apiHealth }) {
   const services = [
-    { name: 'NURA BACKEND', status: apiHealth?.backend === 'ok' ? 'ONLINE' : 'OFFLINE', color: apiHealth?.backend === 'ok' ? '#00ff80' : '#ff4444' },
+    { name: 'HEXPAR BACKEND', status: apiHealth?.backend === 'ok' ? 'ONLINE' : 'OFFLINE', color: apiHealth?.backend === 'ok' ? '#00ff80' : '#ff4444' },
     { name: 'GEMINI 2.5 FLASH', status: apiHealth?.gemini === 'connected' ? 'CONNECTED' : 'ERROR', color: apiHealth?.gemini === 'connected' ? '#00ffe1' : '#ffbb00' },
     { name: 'GROQ AI CORE', status: apiHealth?.groq === 'connected' ? 'CONNECTED' : 'ERROR', color: apiHealth?.groq === 'connected' ? '#00ffe1' : '#ffbb00' },
     { name: 'GPT-5.4 PRO (OPENROUTER)', status: apiHealth?.openrouter === 'connected' ? 'CONNECTED' : 'ERROR', color: apiHealth?.openrouter === 'connected' ? '#00ffe1' : '#ffbb00' },
@@ -495,7 +495,7 @@ export default function HUDWidgets({ apiStatus, apiHealth, visible, onClose }) {
       <div className="hud-panel-header">
         <div>
           <div className="hud-panel-title">SYSTEMS DASHBOARD</div>
-          <div className="hud-panel-subtitle">NURA AI · OPERATIONAL OVERVIEW</div>
+          <div className="hud-panel-subtitle">HEXPAR AI · OPERATIONAL OVERVIEW</div>
         </div>
         <button className="hud-close-btn" onClick={onClose}>✕ CLOSE PANEL</button>
       </div>
@@ -542,7 +542,7 @@ export default function HUDWidgets({ apiStatus, apiHealth, visible, onClose }) {
       {/* Footer Status Bar */}
       <div className="hud-status-bar">
         <div className="hud-status-item">
-          <span className="hud-status-dot" /> NURA AI SYSTEMS ACTIVE
+          <span className="hud-status-dot" /> HEXPAR AI SYSTEMS ACTIVE
         </div>
         <div className="hud-status-item">
           AI STATUS: {apiStatus}

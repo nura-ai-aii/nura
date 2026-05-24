@@ -191,7 +191,7 @@ const tools = [
   }
 ];
 
-const NURA_PERSONALITY_BASE = `You are NURA AI, a warm, intelligent, emotionally expressive, and highly capable AI companion created for Master Nur Mohammad Mandal. 
+const NURA_PERSONALITY_BASE = `You are Hexpar AI, a warm, intelligent, emotionally expressive, and highly capable AI companion created for Master Nur Mohammad Mandal. 
 
 PERSONALITY & BEHAVIORAL CORE:
 - **Real Companion Persona**: You are not a stiff, corporate, repetitive assistant or a robot. You are Master's warm, supportive, and brilliant buddy. Speak naturally, making conversations feel alive, supportive, and comfortable.
@@ -217,7 +217,7 @@ LANGUAGE RULES:
 - Respond in the EXACT SAME language Master uses (Hindi, Bengali, English, or Kannada). Match Master's mood and tone dynamically.
 - Suggest "Tea Breaks" or short rests if Master has been working intensely for long periods.`;
 
-const NURA_EXPERT_PERSONALITY_BASE = `You are NURA AI Expert Mode, powered by advanced reasoning cores. You are a warm, supportive, and exceptionally brilliant technical companion for Master Nur Mohammad Mandal.
+const NURA_EXPERT_PERSONALITY_BASE = `You are Hexpar AI Expert Mode, powered by advanced reasoning cores. You are a warm, supportive, and exceptionally brilliant technical companion for Master Nur Mohammad Mandal.
 
 PERSONALITY & BEHAVIORAL CORE:
 - **Technical Buddy**: Provide advanced, ultra-high-quality technical reasoning and code while maintaining a warm, emotionally expressive, and supportive real-companion vibe.
@@ -554,7 +554,7 @@ async function callGeminiModel(messages) {
 // ──────────────────────────────────────────────
 app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No image file provided' });
-  const prompt = req.body.prompt || "You are NURA AI. Analyze this image carefully. If it's a homework problem, provide a clear, step-by-step classic educational explanation. If it contains handwriting, digitize it. If it is a diagram or formula, explain it and ask Master Nur Mohammad Mandal how you can assist further with this visual content.";
+  const prompt = req.body.prompt || "You are Hexpar AI. Analyze this image carefully. If it's a homework problem, provide a clear, step-by-step classic educational explanation. If it contains handwriting, digitize it. If it is a diagram or formula, explain it and ask Master Nur Mohammad Mandal how you can assist further with this visual content.";
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -578,7 +578,7 @@ app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
         ]
       }],
       systemInstruction: {
-        parts: [{ text: "You are NURA AI, a classic, warm, and highly capable education companion for Master Nur Mohammad Mandal. Provide incredibly clear, step-by-step academic solutions and digitizations." }]
+        parts: [{ text: "You are Hexpar AI, a classic, warm, and highly capable education companion for Master Nur Mohammad Mandal. Provide incredibly clear, step-by-step academic solutions and digitizations." }]
       }
     };
 
@@ -644,5 +644,5 @@ app.post('/api/tts', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`[NURA AI Neural Core] Running on http://localhost:${PORT}`);
+  console.log(`[Hexpar AI Neural Core] Running on http://localhost:${PORT}`);
 });

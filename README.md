@@ -1,4 +1,4 @@
-#  NURA AI
+#  Hexpar AI
 
 > An advanced, ultra-responsive, futuristic neural conversational AI interface. Inspired by sci-fi HUDs and built with cutting-edge front-end and back-end integration.
 

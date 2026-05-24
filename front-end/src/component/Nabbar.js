@@ -1,6 +1,6 @@
 import React from 'react';
 import './Navbar.css';
-import logo from '../images/main-logo.png';
+import logo from '../images/hexperai.png';
 
 export default function Nabbar({ showStatus, setShowStatus, showTerminal, setShowTerminal, apiHealth, showHUD, setShowHUD }) {
 
@@ -10,8 +10,8 @@ export default function Nabbar({ showStatus, setShowStatus, showTerminal, setSho
       <div className="navbar-background"></div>
 
       <div className="navbar-logo">
-        <img src={logo} alt="NURA AI Logo" className="navbar-logo-img" />
-        NURA AI
+        <img src={logo} alt="Hexpar AI Logo" className="navbar-logo-img" />
+        Hexpar AI
       </div>
       <ul className="navbar-links">
         <li className="nav-item">

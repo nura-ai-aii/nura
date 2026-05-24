@@ -50,7 +50,7 @@ async function callGeminiModel(messages) {
 const mockMessages = [
   {
     role: "system",
-    content: "You are NURA AI, a sassy assistant."
+    content: "You are Hexpar AI, a sassy assistant."
   },
   {
     role: "user",

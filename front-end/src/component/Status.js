@@ -41,7 +41,7 @@ export default function Status({ isListening, apiStatus, interactionCount = 0 })
       <div className="status-header">SYSTEM_STATUS</div>
       <div className="status-grid">
         <StatusItem label="SYSTEM" value="ONLINE" color="#00ffe1" />
-        <StatusItem label="NURA AI" value="ACTIVE" color="#00ffe1" />
+        <StatusItem label="Hexpar AI" value="ACTIVE" color="#00ffe1" />
         <StatusItem label="MICROPHONE" value={isListening ? 'ON' : 'OFF'} color={isListening ? '#00ffe1' : '#ff4444'} />
         <StatusItem label="PERMISSION" value={micPermission} color={micPermission === 'GRANTED' ? '#00ffe1' : '#ff4444'} />
         <StatusItem label="API_LINK" value={apiStatus} color={apiStatus === 'CONNECTED' ? '#00ffe1' : '#ff4444'} />

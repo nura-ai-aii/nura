@@ -73,7 +73,7 @@ function StartupSequence({ onComplete }) {
       <div className="startup-container">
         <div className="startup-header">
           <span className="startup-dot-glow"></span>
-          NURA COGNITIVE SYSTEM INITIALIZATION
+          HEXPAR COGNITIVE SYSTEM INITIALIZATION
         </div>
         <div className="startup-terminal-box">
           {logs.map((log, i) => (
@@ -288,7 +288,7 @@ function App() {
 
     const formData = new FormData();
     formData.append('image', imageFile);
-    formData.append('prompt', "You are NURA AI. Analyze this image carefully. If it's a math or science problem, provide a clear, step-by-step classic educational explanation. If it contains handwriting, digitize it perfectly. If it is a diagram or formula, explain it and ask Master Nur Mohammad Mandal how you can assist further with this visual content like a premium Google Lens companion.");
+    formData.append('prompt', "You are Hexpar AI. Analyze this image carefully. If it's a math or science problem, provide a clear, step-by-step classic educational explanation. If it contains handwriting, digitize it perfectly. If it is a diagram or formula, explain it and ask Master Nur Mohammad Mandal how you can assist further with this visual content like a premium Google Lens companion.");
 
     try {
       emitAlert('SYS_VISION', "IMAGE COMMITTED TO COGNITIVE CORE! 📸", false);
@@ -363,7 +363,7 @@ function App() {
     if (!transcript || interactionState !== STATE.LISTENING || transcript === lastProcessedTranscriptRef.current) return;
 
     const lowerT = transcript.toLowerCase();
-    const wakeWords = ["nura", "jarvis", "hey jarvis", "hi nura", "नूरा"];
+    const wakeWords = ["hexpar", "nura", "jarvis", "hey jarvis", "hi nura", "hey hexpar", "hi hexpar", "नूरा", "हैक्सपार"];
     const hasWakeWord = wakeWords.some(w => lowerT.includes(w));
 
     if (hasWakeWord) {
