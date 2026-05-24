@@ -279,6 +279,52 @@ function App() {
     }
   };
 
+  const callVisionCore = async (imageFile) => {
+    if (!imageFile || interactionState === STATE.THINKING) return;
+
+    setInteractionState(STATE.THINKING);
+    setAiResponse("Scanning visual input with Cognitive Lens... 🔍");
+    setShowTerminal(true);
+
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    formData.append('prompt', "You are NURA AI. Analyze this image carefully. If it's a math or science problem, provide a clear, step-by-step classic educational explanation. If it contains handwriting, digitize it perfectly. If it is a diagram or formula, explain it and ask Master Nur Mohammad Mandal how you can assist further with this visual content like a premium Google Lens companion.");
+
+    try {
+      emitAlert('SYS_VISION', "IMAGE COMMITTED TO COGNITIVE CORE! 📸", false);
+      const response = await fetch(`${BACKEND_URL}/api/analyze-image`, {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      setAiResponse(data.text);
+      setChatHistory(prev => [
+        ...prev, 
+        { role: "user", content: "[Uploaded Image for Analysis]" }, 
+        { role: "assistant", content: data.text }
+      ]);
+
+      const newCount = interactionCount + 1;
+      setInteractionCount(newCount);
+      localStorage.setItem('nura_interactions', newCount);
+
+      if (data.text) {
+        await speakResponse(data.text, speechLang);
+      } else {
+        setInteractionState(STATE.IDLE);
+      }
+
+    } catch (error) {
+      console.error("Neural Core Vision Error:", error);
+      setAiResponse("UPLINK FAILURE: VISION ANALYZER CORE UNREACHABLE.");
+      setInteractionState(STATE.IDLE);
+      emitAlert('SYS_ERROR', "COGNITIVE UPLINK FAILED: LENS DISCONNECTED 😭", true);
+    }
+  };
+
   const speakResponse = async (text, lang) => {
     if (!text) return;
 
@@ -412,10 +458,12 @@ function App() {
             isListening={isListening}
             isProcessing={isProcessing}
             showTerminal={showTerminal}
+            activeMood={activeMood}
             onSendMessage={(msg) => {
               setTranscript(msg);
               callNeuralCore(msg);
             }}
+            onAnalyzeImage={callVisionCore}
           />
         </DraggableComponent>
       )}
