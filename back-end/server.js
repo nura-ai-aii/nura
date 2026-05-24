@@ -557,46 +557,43 @@ app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
   const prompt = req.body.prompt || "You are Hexpar AI. Analyze this image carefully. If it's a homework problem, provide a clear, step-by-step classic educational explanation. If it contains handwriting, digitize it. If it is a diagram or formula, explain it and ask Master Nur Mohammad Mandal how you can assist further with this visual content.";
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: "GEMINI_API_KEY is not defined in env variables" });
-    }
-
     const base64Data = req.file.buffer.toString('base64');
     const mimeType = req.file.mimetype || 'image/png';
 
-    const body = {
-      contents: [{
-        parts: [
-          { text: prompt },
-          {
-            inlineData: {
-              mimeType: mimeType,
-              data: base64Data
+    console.log("[Vision Core] Uploading image and sending to Groq multimodal core... 📸");
+
+    const response = await groq.chat.completions.create({
+      model: "llama-3.2-11b-vision-preview",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: prompt
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${mimeType};base64,${base64Data}`
+              }
             }
-          }
-        ]
-      }],
-      systemInstruction: {
-        parts: [{ text: "You are Hexpar AI, a classic, warm, and highly capable education companion for Master Nur Mohammad Mandal. Provide incredibly clear, step-by-step academic solutions and digitizations." }]
-      }
-    };
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-    const response = await axios.post(url, body, {
-      headers: { 'Content-Type': 'application/json' },
-      timeout: 30000
+          ]
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 1024
     });
 
-    const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = response.choices[0]?.message?.content;
     if (text) {
+      console.log("[Vision Core] Groq Analysis Complete! 🚀");
       res.json({ text });
     } else {
-      res.status(500).json({ error: "Could not retrieve visual analysis from Gemini" });
+      res.status(500).json({ error: "Could not retrieve visual analysis from Groq Vision" });
     }
   } catch (error) {
-    console.error('[Vision Core Error]:', error.response?.data || error.message);
+    console.error('[Vision Core Error]:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
