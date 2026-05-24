@@ -1,0 +1,90 @@
+/* src/component/Login.css */
+/* Premium sci‑fi login modal with glassmorphism and neon accents */
+
+.login-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 3, 22, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.login-card {
+  background: rgba(10, 15, 32, 0.9);
+  border-radius: 12px;
+  padding: 2rem 2.5rem;
+  width: 340px;
+  box-shadow: 0 0 30px rgba(0, 245, 255, 0.35);
+  border: 1px solid rgba(0, 245, 255, 0.4);
+  backdrop-filter: blur(6px);
+  animation: fadeInScale 0.4s ease-out;
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.login-title {
+  font-family: 'Inter', sans-serif;
+  color: #e6f1ff;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+  letter-spacing: 0.5px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-input {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid rgba(0, 245, 255, 0.3);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #e6f1ff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.login-input:focus {
+  border-color: #00f5ff;
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
+}
+
+.login-btn {
+  background: linear-gradient(90deg, #00f5ff, #7df9ff);
+  color: #020617;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.login-btn:hover {
+  background: linear-gradient(90deg, #7df9ff, #00f5ff);
+  transform: translateY(-2px);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-error {
+  color: #ff6b00;
+  background: rgba(255, 107, 0, 0.1);
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+}
