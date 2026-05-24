@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import robotImage from '../images/robot-helper.png';
+import robotImage from '../images/robot-help.png';
 import { BACKEND_URL } from '../config';
 
 export default function HwPlasmaOrb({ 
