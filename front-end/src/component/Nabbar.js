@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import './Navbar.css';
 import logo from '../images/hexperai.png';
+import { signOutUser } from '../firebaseAuth';
 
-export default function Nabbar({ showStatus, setShowStatus, showTerminal, setShowTerminal, apiHealth, showHUD, setShowHUD }) {
+export default function Nabbar({ showStatus, setShowStatus, showTerminal, setShowTerminal, apiHealth, showHUD, setShowHUD, currentUser, setCurrentUser }) {
   const [showAbout, setShowAbout] = useState(false);
   const [showOwner, setShowOwner] = useState(false);
   const [alertText, setAlertText] = useState('');
@@ -187,14 +188,16 @@ export default function Nabbar({ showStatus, setShowStatus, showTerminal, setSho
 
         {/* High-Tech System Actions (Right) */}
         <div className="navbar-actions">
-          <button className="btn-login" onClick={() => handleAction('[SESSION RESTORED] WELCOME BACK, MASTER USER.')}>
-            <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-              <polyline points="10 17 15 12 10 7" />
-              <line x1="15" y1="12" x2="3" y2="12" />
-            </svg>
-            Log In
-          </button>
+          {currentUser && (
+            <button className="btn-logout" onClick={() => { signOutUser(); }}>
+              <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Sign Out
+            </button>
+          )}
           
           <button className="btn-signup" onClick={() => handleAction('[ARCH-USER REGISTERED] USER PROFILE SECURED AND ENCRYPTED.')}>
             Sign Up

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import Nabbar from './component/Nabbar';
+import { observeAuthState } from './firebaseAuth';
+import Login from './component/Login';
 import PlasmaOrb from './component/blob';
 import HwPlasmaOrb from './component/hw-blob';
 import Terminal from './component/Terminal';
@@ -101,6 +103,16 @@ function App() {
   const [blobSensitivity] = useState(Number(localStorage.getItem('nura_blobSensitivity')) || 2.0);
 
   const [transcript, setTranscript] = useState("");
+
+  // Firebase auth state
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = observeAuthState((user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
   const [interactionState, setInteractionState] = useState(STATE.IDLE);
   const [speechLang, setSpeechLang] = useState(localStorage.getItem('nura_speechLang') || 'en-US');
 
@@ -399,8 +411,13 @@ function App() {
           showTerminal={showTerminal} setShowTerminal={setShowTerminal}
           apiHealth={apiHealth}
           showHUD={showHUD} setShowHUD={setShowHUD}
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
         />
       )}
+
+      {/* Login Modal */}
+      {(!currentUser) && <Login />}
 
       {!backgroundWakeWordMode && (
         <HUDWidgets
