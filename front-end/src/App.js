@@ -63,6 +63,7 @@ function StartupSequence({ onComplete }) {
       clearInterval(interval);
       clearTimeout(completeTimer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
