@@ -440,10 +440,7 @@ function App() {
         </DraggableComponent>
       )}
 
-<<<<<<< HEAD
-=======
       {activeMood === 'islamic' && <IslamicBlob />}
->>>>>>> 392daf8 (Add ThemeToggle component for dark/light mode)
       <DraggableComponent id="plasma-orb" initialPos={{ bottom: 30, right: 30 }}>
         {activeMood === 'hw' ? (
           <HwPlasmaOrb

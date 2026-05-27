@@ -1,13 +1,27 @@
 // src/firebaseAuth.js
 // Helper functions for Firebase Authentication in Hexpar AI project
-import { getAuth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { app } from "./firebase";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  RecaptchaVerifier,
+} from "firebase/auth";
 
-const auth = getAuth(app);
+const auth = getAuth();
+
+// Initialize invisible reCAPTCHA for phone authentication
+window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {});
 
 export const signInUser = async (email, password) => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     return userCredential.user;
   } catch (error) {
     console.error("Firebase signIn error:", error);
