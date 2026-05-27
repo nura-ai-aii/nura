@@ -1,0 +1,33 @@
+/* src/component/islamic-blob.css */
+/* Premium Islamic‑themed animated blob background */
+
+.islamic-blob-body {
+  margin: 0;
+  overflow: hidden;
+  background: #020617; /* dark backdrop */
+}
+
+.islamic-blob-container {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: -1;
+}
+
+.blob {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle at 30% 30%, #00f5ff, #7df9ff);
+  border-radius: 50%;
+  filter: blur(120px);
+  animation: blobMove 12s infinite alternate;
+}
+
+@keyframes blobMove {
+  0% { transform: translate(-30%, -30%) scale(1); }
+  100% { transform: translate(30%, 30%) scale(1.2); }
+}

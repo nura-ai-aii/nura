@@ -4,6 +4,7 @@ import Nabbar from './component/Nabbar';
 import { observeAuthState } from './firebaseAuth';
 import Login from './component/Login';
 import PlasmaOrb from './component/blob';
+import IslamicBlob from './component/islamic-blob';
 import HwPlasmaOrb from './component/hw-blob';
 import Terminal from './component/Terminal';
 import Status from './component/Status';
@@ -439,6 +440,10 @@ function App() {
         </DraggableComponent>
       )}
 
+<<<<<<< HEAD
+=======
+      {activeMood === 'islamic' && <IslamicBlob />}
+>>>>>>> 392daf8 (Add ThemeToggle component for dark/light mode)
       <DraggableComponent id="plasma-orb" initialPos={{ bottom: 30, right: 30 }}>
         {activeMood === 'hw' ? (
           <HwPlasmaOrb

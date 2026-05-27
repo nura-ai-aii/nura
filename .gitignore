@@ -30,6 +30,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.log
+yarn.lock
 
 # System files
 .DS_Store

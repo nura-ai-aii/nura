@@ -17,7 +17,8 @@ export default function MoodSelector({ activeMood, setActiveMood }) {
 
   const moods = [
     { id: 'scifi', label: 'SCI-FI MODE' },
-    { id: 'hw', label: 'HW MODE' }
+    { id: 'hw', label: 'HW MODE' },
+    { id: 'islamic', label: 'ISLAMIC MODE' }
   ];
 
   const getActiveLabel = () => {
