@@ -8,6 +8,14 @@
   --text-main: #f8fafc;
 }
 
+.dark-mode {
+  --bg-deep: #0a0a0a;
+  --neon-cyan: #66ffff;
+  --neon-blue: #3399ff;
+  --text-main: #e0e0e0;
+  background-color: var(--bg-deep);
+}
+
 * {
   box-sizing: border-box;
   scrollbar-width: thin;
