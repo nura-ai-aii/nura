@@ -783,3 +783,30 @@ body.mood-hw-body .toast-dot-blink {
   background-color: #ff5500 !important;
   box-shadow: 0 0 8px #ff5500 !important;
 }
+
+/* History Modal specific elements */
+.new-chat-history-btn:hover {
+  background: rgba(0, 245, 255, 0.18) !important;
+  box-shadow: 0 0 12px rgba(0, 245, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.history-item-row:hover {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border-color: rgba(0, 245, 255, 0.3) !important;
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.1);
+}
+
+.delete-history-item-btn:hover {
+  color: #ff5555 !important;
+  background: rgba(255, 85, 85, 0.1) !important;
+}
+
+.history-list-wrap::-webkit-scrollbar {
+  width: 4px;
+}
+
+.history-list-wrap::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 255, 0.3);
+  border-radius: 4px;
+}

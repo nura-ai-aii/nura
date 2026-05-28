@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { transcribeAudio } = require('./stt_service');
 const Groq = require('groq-sdk');
+const nodemailer = require('nodemailer');
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_MODEL = "gpt-4o-mini";
@@ -638,6 +639,95 @@ app.post('/api/tts', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// Memory store for OTPs
+const otpStore = new Map();
+
+// Endpoint to send OTP
+app.post('/api/send-otp', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  // Generate 6-digit code
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  otpStore.set(email, { code: otpCode, expires: Date.now() + 10 * 60 * 1000 });
+
+  console.log(`[OTP] Generated code ${otpCode} for ${email}`);
+
+  // Send real email if SMTP configured
+  if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
+    try {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.SMTP_EMAIL,
+          pass: process.env.SMTP_PASSWORD
+        }
+      });
+
+      const mailOptions = {
+        from: `"Hexpar AI Verification" <${process.env.SMTP_EMAIL}>`,
+        to: email,
+        subject: "Hexpar AI Account Verification Code",
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <h2 style="color: #004b93; text-align: center;">Hexpar AI Account Verification</h2>
+            <p>Hello,</p>
+            <p>Thank you for registering an account with Hexpar AI. Please use the following 6-digit verification code to complete your registration:</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <span style="font-size: 32px; font-weight: bold; letter-spacing: 4px; color: #004b93; background: #f3f4f6; padding: 10px 20px; border-radius: 8px; border: 1px dashed #004b93;">
+                ${otpCode}
+              </span>
+            </div>
+            <p>This code is valid for 10 minutes. If you did not request this code, please ignore this email.</p>
+            <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+            <p style="font-size: 12px; color: #9ca3af; text-align: center;">Powered by Hexpar AI © 2026</p>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      return res.json({ message: 'Verification code sent to your email.' });
+    } catch (err) {
+      console.error('[OTP] Failed to send email via SMTP:', err.message);
+      // Fallback in dev/error to make testing smooth
+      return res.json({ 
+        message: 'SMTP configuration failed, fallback triggered.', 
+        otpCode: otpCode
+      });
+    }
+  }
+
+  // Fallback if no SMTP configured
+  return res.json({ 
+    message: 'Verification code generated (No SMTP configured). Check server logs or use the code below.', 
+    otpCode: otpCode 
+  });
+});
+
+// Endpoint to verify OTP
+app.post('/api/verify-otp', (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) return res.status(400).json({ error: 'Email and code are required' });
+
+  const storedData = otpStore.get(email);
+  if (!storedData) {
+    return res.status(400).json({ error: 'No verification code found for this email.' });
+  }
+
+  if (Date.now() > storedData.expires) {
+    otpStore.delete(email);
+    return res.status(400).json({ error: 'Verification code has expired.' });
+  }
+
+  if (storedData.code !== code.trim()) {
+    return res.status(400).json({ error: 'Invalid verification code.' });
+  }
+
+  // Code verified successfully!
+  otpStore.delete(email);
+  res.json({ success: true, message: 'Email verified successfully.' });
 });
 
 app.listen(PORT, () => {

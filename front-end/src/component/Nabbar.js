@@ -1,13 +1,43 @@
 import React, { useState } from 'react';
 import './Navbar.css';
 import { signOutUser } from '../firebaseAuth';
+import { getChatSessions, deleteChatSession } from '../historyService';
 const logo = '/new-logo-hexper.png';
 
-export default function Nabbar({ showStatus, setShowStatus, showTerminal, setShowTerminal, apiHealth, showHUD, setShowHUD, currentUser, setCurrentUser }) {
+export default function Nabbar({ 
+  showStatus, 
+  setShowStatus, 
+  showTerminal, 
+  setShowTerminal, 
+  apiHealth, 
+  showHUD, 
+  setShowHUD, 
+  currentUser, 
+  setCurrentUser,
+  onNewChat,
+  onLoadSession 
+}) {
   const [showAbout, setShowAbout] = useState(false);
   const [showOwner, setShowOwner] = useState(false);
   const [alertText, setAlertText] = useState('');
   const [showAlert, setShowAlert] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [historySessions, setHistorySessions] = useState([]);
+
+  const fetchHistory = async () => {
+    if (currentUser) {
+      const sessions = await getChatSessions(currentUser.uid);
+      setHistorySessions(sessions);
+    }
+  };
+
+  const handleDeleteSession = async (e, sessionId) => {
+    e.stopPropagation();
+    if (currentUser) {
+      await deleteChatSession(currentUser.uid, sessionId);
+      fetchHistory();
+    }
+  };
 
   const handleAction = (text) => {
     setAlertText(text);
@@ -145,6 +175,28 @@ export default function Nabbar({ showStatus, setShowStatus, showTerminal, setSho
               </button>
             </li>
 
+            {currentUser && (
+              <li className="nav-item">
+                <button 
+                  className={`nav-tab-btn ${showHistory ? 'active' : ''}`}
+                  onClick={() => {
+                    setShowHistory(true);
+                    setShowAbout(false);
+                    setShowOwner(false);
+                    fetchHistory();
+                  }}
+                >
+                  <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                  </svg>
+                  <div className="tab-labels">
+                    <span className="tab-title">History</span>
+                  </div>
+                  <div className="active-indicator"></div>
+                </button>
+              </li>
+            )}
+
             <li className="nav-item">
               <button 
                 className={`nav-tab-btn ${showAbout ? 'active' : ''}`}
@@ -273,6 +325,120 @@ export default function Nabbar({ showStatus, setShowStatus, showTerminal, setSho
             </div>
             <div className="modal-footer">
               ARCH-OWNER PRIVILEGES FULLY ENGAGED
+            </div>
+          </div>
+        </div>
+      )}
+      {/* HISTORY MODAL DOCK OVERLAY */}
+      {showHistory && (
+        <div className="sci-fi-modal-overlay" onClick={() => setShowHistory(false)}>
+          <div className="sci-fi-modal-content history-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span>◆ NEURAL MEMORY ARCHIVES</span>
+              <button className="modal-close" onClick={() => setShowHistory(false)}>✕</button>
+            </div>
+            <div className="modal-body history-body" style={{ padding: '1.25rem' }}>
+              
+              {/* New Conversation Button */}
+              <button 
+                className="new-chat-history-btn"
+                onClick={() => {
+                  if (onNewChat) onNewChat();
+                  setShowHistory(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: 'rgba(0, 245, 255, 0.1)',
+                  border: '1px dashed #00F5FF',
+                  borderRadius: '12px',
+                  color: '#00F5FF',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  marginBottom: '1.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s ease',
+                  fontFamily: 'Inter, sans-serif'
+                }}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                New Conversation
+              </button>
+
+              <div className="history-list-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '320px', overflowY: 'auto', paddingRight: '4px' }}>
+                {historySessions.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', padding: '2rem 0', fontFamily: 'Inter, sans-serif' }}>
+                    No saved conversations found.
+                  </div>
+                ) : (
+                  historySessions.map((session) => (
+                    <div 
+                      key={session.sessionId}
+                      className="history-item-row"
+                      onClick={() => {
+                        if (onLoadSession) onLoadSession(session.sessionId, session.messages);
+                        setShowHistory(false);
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.75rem 1rem',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        fontFamily: 'Inter, sans-serif'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden', width: '85%' }}>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(0, 245, 255, 0.7)', flexShrink: 0 }}>
+                          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                        </svg>
+                        <span style={{ fontSize: '0.9rem', color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {session.title || "Untitled Conversation"}
+                        </span>
+                      </div>
+                      
+                      {/* Delete Session Icon */}
+                      <button
+                        className="delete-history-item-btn"
+                        onClick={(e) => handleDeleteSession(e, session.sessionId)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'rgba(255,255,255,0.4)',
+                          cursor: 'pointer',
+                          padding: '0.25rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '6px',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          <line x1="10" y1="11" x2="10" y2="17" />
+                          <line x1="14" y1="11" x2="14" y2="17" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            <div className="modal-footer">
+              SECURE SYNCED NEURAL ARCHIVES
             </div>
           </div>
         </div>

@@ -8,6 +8,10 @@ import {
   signOut,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 
 // Initialize Firebase Auth (no Recaptcha here) 
@@ -48,6 +52,37 @@ export const signOutUser = async () => {
 
 export const observeAuthState = (callback) => {
   return onAuthStateChanged(auth, callback);
+};
+
+export const signInWithGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    return result.user;
+  } catch (error) {
+    console.error("Google signIn error:", error);
+    throw error;
+  }
+};
+
+export const signInWithGithub = async () => {
+  try {
+    const provider = new GithubAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    return result.user;
+  } catch (error) {
+    console.error("GitHub signIn error:", error);
+    throw error;
+  }
+};
+
+export const resetUserPassword = async (email) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error) {
+    console.error("Password reset error:", error);
+    throw error;
+  }
 };
 
 export { auth };

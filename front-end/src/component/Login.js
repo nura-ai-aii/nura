@@ -1,22 +1,35 @@
 // src/component/Login.js
-// Firebase login modal component – premium sci‑fi design
+// Firebase login modal component – premium glassmorphism design with OTP Gmail verification matching prompt mockup
 import React, { useState, useEffect } from "react";
 import "./Login.css";
-import { signInUser, signUpUser } from "../firebaseAuth";
+import { 
+  signInUser, 
+  signUpUser, 
+  signInWithGoogle, 
+  signInWithGithub, 
+  resetUserPassword 
+} from "../firebaseAuth";
+import { BACKEND_URL } from "../config";
 
 export default function Login() {
-  const [mode, setMode] = useState("login"); // "login" or "signup"
+  const [mode, setMode] = useState("login"); // "login", "signup", "reset"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(true);
+
+  // Sign up step logic: 1 = Send OTP, 2 = Verify OTP, 3 = Password Setup
+  const [signUpStep, setSignUpStep] = useState(1);
+  const [otpCode, setOtpCode] = useState("");
 
   // Show the modal if no user or after 30 days since last login
   useEffect(() => {
     const lastLogin = localStorage.getItem("hexpar_lastLogin");
     if (!lastLogin) {
-      // First time – show modal and record timestamp
       setShow(true);
       localStorage.setItem("hexpar_lastLogin", Date.now().toString());
     } else {
@@ -26,22 +39,103 @@ export default function Login() {
     }
   }, []);
 
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send verification code.");
+      
+      // If code was returned directly in development fallback, tell the user or log it
+      if (data.otpCode) {
+        setSuccessMessage(`[Dev Fallback] Code is: ${data.otpCode}. ${data.message}`);
+      } else {
+        setSuccessMessage(data.message || "Verification code sent to your Gmail inbox.");
+      }
+      setSignUpStep(2);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to send verification code.");
+    }
+    setLoading(false);
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otpCode })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Verification failed.");
+
+      setSuccessMessage("Email verified successfully! Complete your registration by entering a password.");
+      setSignUpStep(3);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Invalid or expired verification code.");
+    }
+    setLoading(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
     setLoading(true);
     try {
       if (mode === "login") {
         await signInUser(email, password);
-      } else {
+        setShow(false);
+        localStorage.setItem("hexpar_lastLogin", Date.now().toString());
+      } else if (mode === "signup") {
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match.");
+        }
         await signUpUser(email, password);
+        setShow(false);
+        localStorage.setItem("hexpar_lastLogin", Date.now().toString());
+      } else if (mode === "reset") {
+        await resetUserPassword(email);
+        setSuccessMessage("Password reset email sent! Check your inbox.");
+        setMode("login");
       }
-      // Success – auth observer updates currentUser, hide modal, reset timestamp
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Authentication failed");
+    }
+    setLoading(false);
+  };
+
+  const handleSocialSignIn = async (provider) => {
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+    try {
+      if (provider === "google") {
+        await signInWithGoogle();
+      } else if (provider === "github") {
+        await signInWithGithub();
+      } else if (provider === "facebook") {
+        throw new Error("Facebook authentication is coming soon.");
+      }
       setShow(false);
       localStorage.setItem("hexpar_lastLogin", Date.now().toString());
     } catch (err) {
       console.error(err);
-      setError(err.message || "Authentication failed");
+      setError(err.message || `${provider} authentication failed`);
     }
     setLoading(false);
   };
@@ -50,40 +144,251 @@ export default function Login() {
 
   return (
     <div className="login-modal">
-      <div className="login-card">
-        <h2 className="login-title">Hexpar AI {mode === "login" ? "Access" : "Register"}</h2>
-        <form onSubmit={handleSubmit} className="login-form">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="login-input"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="login-input"
-          />
-          {error && <div className="login-error">{error}</div>}
-          <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? (mode === "login" ? "Signing In…" : "Creating…") : (mode === "login" ? "Sign In" : "Create Account")}
-          </button>
-        </form>
-        <div style={{ marginTop: "1rem", textAlign: "center" }}>
-          {mode === "login" ? (
-            <span>
-              No account? <button onClick={() => setMode("signup")}>Create one</button>
-            </span>
-          ) : (
-            <span>
-              Already have an account? <button onClick={() => setMode("login")}>Log In</button>
-            </span>
-          )}
+      <div className="login-backdrop-wrapper">
+        <div className="login-card-container">
+          <div className="login-glass-card">
+            
+            {/* Logo and title */}
+            <div className="login-brand-header">
+              <img src="/new-logo-hexper.png" alt="Hexper Logo" className="login-brand-logo" />
+              <h2 className="login-title-primary">
+                {mode === "login" && "Login"}
+                {mode === "signup" && (
+                  signUpStep === 1 ? "Verify Email" :
+                  signUpStep === 2 ? "Enter OTP" : "Register"
+                )}
+                {mode === "reset" && "Reset"}
+              </h2>
+            </div>
+
+            {/* Error & Success Notification Boxes */}
+            {error && <div className="login-alert-box error">{error}</div>}
+            {successMessage && <div className="login-alert-box success">{successMessage}</div>}
+
+            {/* LOGIN FLOW */}
+            {mode === "login" && (
+              <form onSubmit={handleSubmit} className="login-form-container">
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    placeholder="username@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="form-input-field"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <div className="password-input-wrap">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="form-input-field password-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="password-toggle-visibility"
+                      aria-label="Toggle password visibility"
+                    >
+                      {showPassword ? (
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="forgot-password-link"
+                  onClick={() => setMode("reset")}
+                >
+                  Forgot Password?
+                </button>
+
+                <button type="submit" className="login-action-btn" disabled={loading}>
+                  {loading ? <span className="btn-spinner"></span> : <span>Sign in</span>}
+                </button>
+              </form>
+            )}
+
+            {/* SIGN UP FLOW (3 steps) */}
+            {mode === "signup" && (
+              <>
+                {/* Step 1: Send Verification OTP Code */}
+                {signUpStep === 1 && (
+                  <form onSubmit={handleSendOTP} className="login-form-container">
+                    <div className="form-group">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="email"
+                        placeholder="username@gmail.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="form-input-field"
+                      />
+                    </div>
+                    <button type="submit" className="login-action-btn" disabled={loading}>
+                      {loading ? <span className="btn-spinner"></span> : <span>Send Code</span>}
+                    </button>
+                  </form>
+                )}
+
+                {/* Step 2: Enter & Verify OTP Code */}
+                {signUpStep === 2 && (
+                  <form onSubmit={handleVerifyOTP} className="login-form-container">
+                    <div className="form-group">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="email"
+                        value={email}
+                        disabled
+                        className="form-input-field"
+                        style={{ opacity: 0.65 }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Verification Code</label>
+                      <input
+                        type="text"
+                        placeholder="Enter 6-digit code"
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        required
+                        maxLength={6}
+                        className="form-input-field"
+                        style={{ textAlign: "center", letterSpacing: "4px", fontSize: "1.1rem" }}
+                      />
+                    </div>
+                    <button type="submit" className="login-action-btn" disabled={loading}>
+                      {loading ? <span className="btn-spinner"></span> : <span>Verify Code</span>}
+                    </button>
+                    <button
+                      type="button"
+                      className="forgot-password-link"
+                      onClick={() => setSignUpStep(1)}
+                      style={{ marginTop: "0.25rem", textAlign: "center", alignSelf: "center" }}
+                    >
+                      Change Email
+                    </button>
+                  </form>
+                )}
+
+                {/* Step 3: Password setup and creation */}
+                {signUpStep === 3 && (
+                  <form onSubmit={handleSubmit} className="login-form-container">
+                    <div className="form-group">
+                      <label className="form-label">Password</label>
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="form-input-field"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Confirm Password</label>
+                      <input
+                        type="password"
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        className="form-input-field"
+                      />
+                    </div>
+                    <button type="submit" className="login-action-btn" disabled={loading}>
+                      {loading ? <span className="btn-spinner"></span> : <span>Create Account</span>}
+                    </button>
+                  </form>
+                )}
+              </>
+            )}
+
+            {/* PASSWORD RESET FLOW */}
+            {mode === "reset" && (
+              <form onSubmit={handleSubmit} className="login-form-container">
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    placeholder="username@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="form-input-field"
+                  />
+                </div>
+                <button type="submit" className="login-action-btn" disabled={loading}>
+                  {loading ? <span className="btn-spinner"></span> : <span>Send Reset Link</span>}
+                </button>
+              </form>
+            )}
+
+            {/* Social logins */}
+            {mode !== "reset" && signUpStep !== 3 && (
+              <>
+                <div className="social-divider">
+                  <span className="divider-line"></span>
+                  <span className="divider-text">or continue with</span>
+                  <span className="divider-line"></span>
+                </div>
+
+                <div className="social-buttons-grid">
+                  <button type="button" className="social-login-btn google" onClick={() => handleSocialSignIn("google")} disabled={loading}>
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                      <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.13-5.136 4.13A5.79 5.79 0 0 1 8.2 12.74a5.79 5.79 0 0 1 5.79-5.79c2.519 0 4.114 1.085 5.07 2.002l3.207-3.208C20.301 3.865 17.43 2.15 13.99 2.15c-5.437 0-9.84 4.403-9.84 9.84s4.403 9.84 9.84 9.84c5.684 0 9.84-3.997 9.84-9.84 0-.665-.06-1.3-.172-1.705H12.24Z" />
+                    </svg>
+                  </button>
+                  <button type="button" className="social-login-btn github" onClick={() => handleSocialSignIn("github")} disabled={loading}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+                    </svg>
+                  </button>
+                  <button type="button" className="social-login-btn facebook" onClick={() => handleSocialSignIn("facebook")} disabled={loading}>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                      <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.95z" />
+                    </svg>
+                  </button>
+                </div>
+              </>
+            )}
+
+            <div className="login-footer-text">
+              {mode === "login" && (
+                <span>
+                  Don't have an account? <button type="button" className="footer-toggle-btn" onClick={() => { setMode("signup"); setSignUpStep(1); }}>Register for free</button>
+                </span>
+              )}
+              {mode === "signup" && (
+                <span>
+                  Already have an account? <button type="button" className="footer-toggle-btn" onClick={() => setMode("login")}>Sign in</button>
+                </span>
+              )}
+              {mode === "reset" && (
+                <span>
+                  Back to <button type="button" className="footer-toggle-btn" onClick={() => setMode("login")}>Sign in</button>
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 import Nabbar from './component/Nabbar';
 import { observeAuthState } from './firebaseAuth';
+import { saveChatSession } from './historyService';
 import Login from './component/Login';
 import PlasmaOrb from './component/blob';
 import IslamicBlob from './component/islamic-blob';
@@ -12,7 +13,6 @@ import LanguageSelector from './component/LanguageSelector';
 import ModelSelector from './component/ModelSelector';
 import MoodSelector from './component/MoodSelector';
 import HUDWidgets from './component/HUDWidgets';
-import PhoneAuth from './component/PhoneAuth';
 import AlertSystem, { emitAlert } from './component/AlertSystem';
 import DraggableComponent from './component/DraggableComponent';
 import StatusTerminal from './component/StatusTerminal';
@@ -120,6 +120,7 @@ function App() {
 
   const [aiResponse, setAiResponse] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
   const [interactionCount, setInteractionCount] = useState(Number(localStorage.getItem('nura_interactions')) || 0);
   const [apiStatus, setApiStatus] = useState('OFFLINE');
   const [showStatus, setShowStatus] = useState(false);
@@ -214,6 +215,12 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [speechLang]);
 
+  const handleNewChat = () => {
+    setChatHistory([]);
+    setCurrentSessionId(null);
+    setAiResponse("");
+  };
+
   // Chat logic
   const callNeuralCore = async (userInput) => {
     if (!userInput || interactionState === STATE.THINKING) return;
@@ -236,6 +243,18 @@ function App() {
 
       setAiResponse(data.text);
       setChatHistory(prev => [...prev, { role: "user", content: userInput }, { role: "assistant", content: data.text }]);
+
+      // Firestore chat session saving logic
+      if (currentUser) {
+        let activeSessionId = currentSessionId;
+        if (!activeSessionId) {
+          activeSessionId = Date.now().toString();
+          setCurrentSessionId(activeSessionId);
+        }
+        const sessionTitle = chatHistory.length === 0 ? userInput.slice(0, 30) + "..." : undefined;
+        const sessionMessages = [...newMessages, { role: "assistant", content: data.text }];
+        saveChatSession(currentUser.uid, activeSessionId, sessionMessages, sessionTitle);
+      }
 
       const newCount = interactionCount + 1;
       setInteractionCount(newCount);
@@ -415,6 +434,16 @@ function App() {
           showHUD={showHUD} setShowHUD={setShowHUD}
           currentUser={currentUser}
           setCurrentUser={setCurrentUser}
+          onNewChat={handleNewChat}
+          onLoadSession={(sessionId, messages) => {
+            setCurrentSessionId(sessionId);
+            setChatHistory(messages);
+            if (messages && messages.length > 0) {
+              setAiResponse(messages[messages.length - 1].content);
+            }
+            setShowTerminal(true);
+            setShowStatus(false);
+          }}
         />
       )}
 
@@ -429,12 +458,6 @@ function App() {
           onClose={() => setShowHUD(false)}
         />
       )}
-
-      {/* Recaptcha container for phone auth */}
-      <div id="recaptcha-container"></div>
-
-      {/* Phone Auth UI */}
-      <PhoneAuth />
 
       {!backgroundWakeWordMode && showStatus && (
         <DraggableComponent id="status-hud" initialPos={{ bottom: 200, right: 200 }}>
