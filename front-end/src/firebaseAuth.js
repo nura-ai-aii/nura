@@ -10,10 +10,8 @@ import {
   RecaptchaVerifier,
 } from "firebase/auth";
 
+// Initialize Firebase Auth (no Recaptcha here) 
 const auth = getAuth();
-
-// Initialize invisible reCAPTCHA for phone authentication
-window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {});
 
 export const signInUser = async (email, password) => {
   try {

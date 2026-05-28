@@ -12,6 +12,7 @@ import LanguageSelector from './component/LanguageSelector';
 import ModelSelector from './component/ModelSelector';
 import MoodSelector from './component/MoodSelector';
 import HUDWidgets from './component/HUDWidgets';
+import PhoneAuth from './component/PhoneAuth';
 import AlertSystem, { emitAlert } from './component/AlertSystem';
 import DraggableComponent from './component/DraggableComponent';
 import StatusTerminal from './component/StatusTerminal';
@@ -428,6 +429,12 @@ function App() {
           onClose={() => setShowHUD(false)}
         />
       )}
+
+      {/* Recaptcha container for phone auth */}
+      <div id="recaptcha-container"></div>
+
+      {/* Phone Auth UI */}
+      <PhoneAuth />
 
       {!backgroundWakeWordMode && showStatus && (
         <DraggableComponent id="status-hud" initialPos={{ bottom: 200, right: 200 }}>
