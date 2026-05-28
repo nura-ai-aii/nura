@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Navbar.css';
-import logo from '../images/hexperai.png';
 import { signOutUser } from '../firebaseAuth';
+const logo = '/new-logo-hexper.png';
 
 export default function Nabbar({ showStatus, setShowStatus, showTerminal, setShowTerminal, apiHealth, showHUD, setShowHUD, currentUser, setCurrentUser }) {
   const [showAbout, setShowAbout] = useState(false);
