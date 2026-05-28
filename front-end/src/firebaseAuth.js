@@ -7,7 +7,6 @@ import {
   signOut,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
-  RecaptchaVerifier,
 } from "firebase/auth";
 
 // Initialize Firebase Auth (no Recaptcha here) 

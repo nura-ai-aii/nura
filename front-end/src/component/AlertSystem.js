@@ -40,6 +40,10 @@ const playAlertSound = (type) => {
       // 2 ascending confirmation tones
       playBeep(660, now, 0.12, 0.25);
       playBeep(880, now + 0.16, 0.2, 0.3);
+    } else if (type === 'warning') {
+      // Play custom warning sound file
+      const audio = new Audio('/warning.mp3');
+      audio.play();
     } else {
       // Single soft notice beep
       playBeep(600, now, 0.15, 0.2);

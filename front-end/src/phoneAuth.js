@@ -1,6 +1,6 @@
 // src/phoneAuth.js
 // Helper for Firebase phone authentication using reCAPTCHA verifier
-import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "firebase/auth";
+import { getAuth, signInWithPhoneNumber } from "firebase/auth";
 
 // Assumes window.recaptchaVerifier is initialized (see firebaseAuth.js)
 export const signInWithPhone = async (phoneNumber) => {
