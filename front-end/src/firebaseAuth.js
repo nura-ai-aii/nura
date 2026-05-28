@@ -1,6 +1,7 @@
 // src/firebaseAuth.js
 // Helper functions for Firebase Authentication in Hexpar AI project
 
+import "./firebase";
 import {
   getAuth,
   signInWithEmailAndPassword,

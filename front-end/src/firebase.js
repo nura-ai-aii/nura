@@ -1,7 +1,7 @@
 // src/firebase.js
 // Firebase SDK initialization for Hexpar AI project
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Firebase configuration (auto-generated for hexparai.firebaseapp.com)
 const firebaseConfig = {
@@ -14,8 +14,18 @@ const firebaseConfig = {
   measurementId: "G-SB8NXVBWY4"
 };
 
-// Initialize Firebase app and analytics
+// Initialize Firebase app and analytics safely
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+let analytics = null;
+isSupported().then((supported) => {
+  if (supported) {
+    try {
+      analytics = getAnalytics(app);
+    } catch (e) {
+      console.warn("Firebase Analytics not initialized:", e);
+    }
+  }
+});
 
 export { app, analytics };
