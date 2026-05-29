@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './Navbar.css';
 import { signOutUser } from '../firebaseAuth';
 import { getChatSessions, deleteChatSession } from '../historyService';
+import { useNavigate, useLocation } from 'react-router-dom';
 const logo = '/new-logo-hexper.png';
 
 export default function Nabbar({ 
@@ -15,13 +16,27 @@ export default function Nabbar({
   currentUser, 
   setCurrentUser,
   onNewChat,
-  onLoadSession 
+  onLoadSession,
+  showHistory: propShowHistory,
+  setShowHistory: propSetShowHistory,
+  showAbout: propShowAbout,
+  setShowAbout: propSetShowAbout
 }) {
-  const [showAbout, setShowAbout] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [localShowAbout, localSetShowAbout] = useState(false);
+  const showAbout = propShowAbout !== undefined ? propShowAbout : localShowAbout;
+  const setShowAbout = propSetShowAbout !== undefined ? propSetShowAbout : localSetShowAbout;
+
   const [showOwner, setShowOwner] = useState(false);
   const [alertText, setAlertText] = useState('');
   const [showAlert, setShowAlert] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+
+  const [localShowHistory, localSetShowHistory] = useState(false);
+  const showHistory = propShowHistory !== undefined ? propShowHistory : localShowHistory;
+  // eslint-disable-next-line no-unused-vars
+  const setShowHistory = propSetShowHistory !== undefined ? propSetShowHistory : localSetShowHistory;
   const [historySessions, setHistorySessions] = useState([]);
 
   const fetchHistory = async () => {
@@ -30,6 +45,13 @@ export default function Nabbar({
       setHistorySessions(sessions);
     }
   };
+
+  React.useEffect(() => {
+    if (showHistory) {
+      fetchHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showHistory]);
 
   const handleDeleteSession = async (e, sessionId) => {
     e.stopPropagation();
@@ -120,11 +142,8 @@ export default function Nabbar({
           <ul className="navbar-links">
             <li className="nav-item">
               <button 
-                className={`nav-tab-btn ${showTerminal && !showStatus ? 'active' : ''}`}
-                onClick={() => {
-                  setShowTerminal(true);
-                  setShowStatus(false);
-                }}
+                className={`nav-tab-btn ${location.pathname === '/' || location.pathname === '/chat' ? 'active' : ''}`}
+                onClick={() => navigate('/chat')}
               >
                 <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -138,11 +157,8 @@ export default function Nabbar({
 
             <li className="nav-item">
               <button 
-                className={`nav-tab-btn ${showStatus && !showTerminal ? 'active' : ''}`}
-                onClick={() => {
-                  setShowStatus(true);
-                  setShowTerminal(false);
-                }}
+                className={`nav-tab-btn ${location.pathname === '/status' ? 'active' : ''}`}
+                onClick={() => navigate('/status')}
               >
                 <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
@@ -160,8 +176,8 @@ export default function Nabbar({
 
             <li className="nav-item">
               <button 
-                className={`nav-tab-btn ${showHUD ? 'active' : ''}`}
-                onClick={() => setShowHUD(!showHUD)}
+                className={`nav-tab-btn ${location.pathname === '/system' ? 'active' : ''}`}
+                onClick={() => navigate(location.pathname === '/system' ? '/chat' : '/system')}
               >
                 <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
@@ -178,12 +194,11 @@ export default function Nabbar({
             {currentUser && (
               <li className="nav-item">
                 <button 
-                  className={`nav-tab-btn ${showHistory ? 'active' : ''}`}
+                  className={`nav-tab-btn ${location.pathname === '/history' ? 'active' : ''}`}
                   onClick={() => {
-                    setShowHistory(true);
                     setShowAbout(false);
                     setShowOwner(false);
-                    fetchHistory();
+                    navigate('/history');
                   }}
                 >
                   <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -199,10 +214,10 @@ export default function Nabbar({
 
             <li className="nav-item">
               <button 
-                className={`nav-tab-btn ${showAbout ? 'active' : ''}`}
+                className={`nav-tab-btn ${location.pathname === '/about' ? 'active' : ''}`}
                 onClick={() => {
-                  setShowAbout(true);
                   setShowOwner(false);
+                  navigate('/about');
                 }}
               >
                 <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -273,11 +288,11 @@ export default function Nabbar({
 
       {/* ABOUT MODAL DOCK OVERLAY */}
       {showAbout && (
-        <div className="sci-fi-modal-overlay" onClick={() => setShowAbout(false)}>
+        <div className="sci-fi-modal-overlay" onClick={() => navigate('/chat')}>
           <div className="sci-fi-modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <span>◆ SYSTEM DEFINITION FILE</span>
-              <button className="modal-close" onClick={() => setShowAbout(false)}>✕</button>
+              <button className="modal-close" onClick={() => navigate('/chat')}>✕</button>
             </div>
             <div className="modal-body">
               <div className="system-orb-mini">
@@ -331,11 +346,11 @@ export default function Nabbar({
       )}
       {/* HISTORY MODAL DOCK OVERLAY */}
       {showHistory && (
-        <div className="sci-fi-modal-overlay" onClick={() => setShowHistory(false)}>
+        <div className="sci-fi-modal-overlay" onClick={() => navigate('/chat')}>
           <div className="sci-fi-modal-content history-modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <span>◆ NEURAL MEMORY ARCHIVES</span>
-              <button className="modal-close" onClick={() => setShowHistory(false)}>✕</button>
+              <button className="modal-close" onClick={() => navigate('/chat')}>✕</button>
             </div>
             <div className="modal-body history-body" style={{ padding: '1.25rem' }}>
               
@@ -344,7 +359,7 @@ export default function Nabbar({
                 className="new-chat-history-btn"
                 onClick={() => {
                   if (onNewChat) onNewChat();
-                  setShowHistory(false);
+                  navigate('/chat');
                 }}
                 style={{
                   width: '100%',
@@ -384,7 +399,7 @@ export default function Nabbar({
                       className="history-item-row"
                       onClick={() => {
                         if (onLoadSession) onLoadSession(session.sessionId, session.messages);
-                        setShowHistory(false);
+                        navigate('/chat');
                       }}
                       style={{
                         display: 'flex',

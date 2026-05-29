@@ -110,6 +110,13 @@ function App() {
   // Firebase auth state
   const [currentUser, setCurrentUser] = useState(null);
 
+  // UI Panel states
+  const [showStatus, setShowStatus] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(true);
+  const [showHUD, setShowHUD] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+
   useEffect(() => {
     const unsubscribe = observeAuthState((user) => {
       setCurrentUser(user);
@@ -121,11 +128,49 @@ function App() {
     const authRoutes = ['/log-in', '/sign-in', '/sing-in', '/register', '/forgot-password'];
     if (!currentUser && !authRoutes.includes(location.pathname)) {
       navigate('/log-in');
+      return;
     }
     if (currentUser && authRoutes.includes(location.pathname)) {
       navigate('/');
+      return;
     }
-  }, [currentUser, location.pathname, navigate]);
+
+    // Synchronize pages based on current routing path
+    if (currentUser) {
+      const path = location.pathname;
+      if (path === '/' || path === '/chat') {
+        setShowTerminal(true);
+        setShowStatus(false);
+        setShowHUD(false);
+        setShowHistory(false);
+        setShowAbout(false);
+      } else if (path === '/status') {
+        setShowStatus(true);
+        setShowTerminal(false);
+        setShowHUD(false);
+        setShowHistory(false);
+        setShowAbout(false);
+      } else if (path === '/system') {
+        setShowHUD(true);
+        setShowTerminal(false);
+        setShowStatus(false);
+        setShowHistory(false);
+        setShowAbout(false);
+      } else if (path === '/history') {
+        setShowHistory(true);
+        setShowTerminal(true);
+        setShowStatus(false);
+        setShowHUD(false);
+        setShowAbout(false);
+      } else if (path === '/about') {
+        setShowAbout(true);
+        setShowTerminal(true);
+        setShowStatus(false);
+        setShowHUD(false);
+        setShowHistory(false);
+      }
+    }
+  }, [currentUser, location.pathname, navigate, setShowTerminal, setShowStatus, setShowHUD, setShowHistory, setShowAbout]);
 
   const [transcript, setTranscript] = useState("");
   const [interactionState, setInteractionState] = useState(STATE.IDLE);
@@ -136,9 +181,6 @@ function App() {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [interactionCount, setInteractionCount] = useState(Number(localStorage.getItem('nura_interactions')) || 0);
   const [apiStatus, setApiStatus] = useState('OFFLINE');
-  const [showStatus, setShowStatus] = useState(false);
-  const [showTerminal, setShowTerminal] = useState(true);
-  const [showHUD, setShowHUD] = useState(true);
   const [apiHealth, setApiHealth] = useState(null);
   const [generatedImage, setGeneratedImage] = useState(null);
   const [selectedModel, setSelectedModel] = useState(localStorage.getItem('nura_selectedModel') || 'AUTO');
@@ -445,6 +487,8 @@ function App() {
           showTerminal={showTerminal} setShowTerminal={setShowTerminal}
           apiHealth={apiHealth}
           showHUD={showHUD} setShowHUD={setShowHUD}
+          showHistory={showHistory} setShowHistory={setShowHistory}
+          showAbout={showAbout} setShowAbout={setShowAbout}
           currentUser={currentUser}
           setCurrentUser={setCurrentUser}
           onNewChat={handleNewChat}
@@ -474,7 +518,7 @@ function App() {
           apiStatus={apiStatus}
           apiHealth={apiHealth}
           visible={showHUD}
-          onClose={() => setShowHUD(false)}
+          onClose={() => navigate('/chat')}
         />
       )}
 
@@ -484,7 +528,7 @@ function App() {
             isListening={isListening}
             apiStatus={apiStatus}
             interactionCount={interactionCount}
-            onClose={() => setShowStatus(false)}
+            onClose={() => navigate('/chat')}
           />
         </DraggableComponent>
       )}

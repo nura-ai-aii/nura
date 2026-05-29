@@ -8,7 +8,8 @@ import {
   signUpUser, 
   signInWithGoogle, 
   signInWithGithub, 
-  resetUserPassword 
+  resetUserPassword,
+  signInWithAnonymous
 } from "../firebaseAuth";
 
 export default function Login({ mode: initialMode = "login" }) {
@@ -73,6 +74,8 @@ export default function Login({ mode: initialMode = "login" }) {
         await signInWithGithub();
       } else if (provider === "facebook") {
         throw new Error("Facebook authentication is coming soon.");
+      } else if (provider === "anonymous") {
+        await signInWithAnonymous();
       }
       localStorage.setItem("hexpar_lastLogin", Date.now().toString());
       navigate("/");
@@ -249,6 +252,12 @@ export default function Login({ mode: initialMode = "login" }) {
                   <button type="button" className="social-login-btn facebook" onClick={() => handleSocialSignIn("facebook")} disabled={loading}>
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                       <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.95z" />
+                    </svg>
+                  </button>
+                  <button type="button" className="social-login-btn anonymous" onClick={() => handleSocialSignIn("anonymous")} disabled={loading} title="Sign In Anonymously">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
                     </svg>
                   </button>
                 </div>

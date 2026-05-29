@@ -12,6 +12,7 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   sendPasswordResetEmail,
+  signInAnonymously,
 } from "firebase/auth";
 
 // Initialize Firebase Auth (no Recaptcha here) 
@@ -72,6 +73,16 @@ export const signInWithGithub = async () => {
     return result.user;
   } catch (error) {
     console.error("GitHub signIn error:", error);
+    throw error;
+  }
+};
+
+export const signInWithAnonymous = async () => {
+  try {
+    const result = await signInAnonymously(auth);
+    return result.user;
+  } catch (error) {
+    console.error("Anonymous signIn error:", error);
     throw error;
   }
 };
