@@ -1,6 +1,7 @@
 // src/component/Login.js
-// Firebase login modal component – premium glassmorphism design with OTP Gmail verification matching prompt mockup
+// Firebase login modal component – premium glassmorphism design with routing support
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import { 
   signInUser, 
@@ -9,10 +10,10 @@ import {
   signInWithGithub, 
   resetUserPassword 
 } from "../firebaseAuth";
-import { BACKEND_URL } from "../config";
 
-export default function Login() {
-  const [mode, setMode] = useState("login"); // "login", "signup", "reset"
+export default function Login({ mode: initialMode = "login" }) {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState(initialMode); // "login", "signup", "reset"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,75 +21,15 @@ export default function Login() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [show, setShow] = useState(true);
 
-  // Sign up step logic: 1 = Send OTP, 2 = Verify OTP, 3 = Password Setup
-  const [signUpStep, setSignUpStep] = useState(1);
-  const [otpCode, setOtpCode] = useState("");
-
-  // Show the modal if no user or after 30 days since last login
+  // Sync internal mode with routing prop
   useEffect(() => {
-    const lastLogin = localStorage.getItem("hexpar_lastLogin");
-    if (!lastLogin) {
-      setShow(true);
-      localStorage.setItem("hexpar_lastLogin", Date.now().toString());
-    } else {
-      const diff = Date.now() - parseInt(lastLogin, 10);
-      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-      if (diff > thirtyDays) setShow(true);
+    if (initialMode) {
+      setMode(initialMode);
+      setError("");
+      setSuccessMessage("");
     }
-  }, []);
-
-  const handleSendOTP = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
-    setLoading(true);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/send-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to send verification code.");
-      
-      // If code was returned directly in development fallback, tell the user or log it
-      if (data.otpCode) {
-        setSuccessMessage(`[Dev Fallback] Code is: ${data.otpCode}. ${data.message}`);
-      } else {
-        setSuccessMessage(data.message || "Verification code sent to your Gmail inbox.");
-      }
-      setSignUpStep(2);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Failed to send verification code.");
-    }
-    setLoading(false);
-  };
-
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccessMessage("");
-    setLoading(true);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: otpCode })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Verification failed.");
-
-      setSuccessMessage("Email verified successfully! Complete your registration by entering a password.");
-      setSignUpStep(3);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Invalid or expired verification code.");
-    }
-    setLoading(false);
-  };
+  }, [initialMode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,19 +39,21 @@ export default function Login() {
     try {
       if (mode === "login") {
         await signInUser(email, password);
-        setShow(false);
         localStorage.setItem("hexpar_lastLogin", Date.now().toString());
+        navigate("/");
       } else if (mode === "signup") {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match.");
         }
         await signUpUser(email, password);
-        setShow(false);
         localStorage.setItem("hexpar_lastLogin", Date.now().toString());
+        navigate("/");
       } else if (mode === "reset") {
         await resetUserPassword(email);
-        setSuccessMessage("Password reset email sent! Check your inbox.");
-        setMode("login");
+        setSuccessMessage("Password reset email sent! Check your Gmail inbox.");
+        setTimeout(() => {
+          navigate("/log-in");
+        }, 3000);
       }
     } catch (err) {
       console.error(err);
@@ -131,16 +74,14 @@ export default function Login() {
       } else if (provider === "facebook") {
         throw new Error("Facebook authentication is coming soon.");
       }
-      setShow(false);
       localStorage.setItem("hexpar_lastLogin", Date.now().toString());
+      navigate("/");
     } catch (err) {
       console.error(err);
       setError(err.message || `${provider} authentication failed`);
     }
     setLoading(false);
   };
-
-  if (!show) return null;
 
   return (
     <div className="login-modal">
@@ -153,10 +94,7 @@ export default function Login() {
               <img src="/new-logo-hexper.png" alt="Hexper Logo" className="login-brand-logo" />
               <h2 className="login-title-primary">
                 {mode === "login" && "Login"}
-                {mode === "signup" && (
-                  signUpStep === 1 ? "Verify Email" :
-                  signUpStep === 2 ? "Enter OTP" : "Register"
-                )}
+                {mode === "signup" && "Register"}
                 {mode === "reset" && "Reset"}
               </h2>
             </div>
@@ -215,7 +153,7 @@ export default function Login() {
                 <button
                   type="button"
                   className="forgot-password-link"
-                  onClick={() => setMode("reset")}
+                  onClick={() => navigate("/forgot-password")}
                 >
                   Forgot Password?
                 </button>
@@ -226,100 +164,46 @@ export default function Login() {
               </form>
             )}
 
-            {/* SIGN UP FLOW (3 steps) */}
+            {/* DIRECT SIGN UP FLOW (No OTP) */}
             {mode === "signup" && (
-              <>
-                {/* Step 1: Send Verification OTP Code */}
-                {signUpStep === 1 && (
-                  <form onSubmit={handleSendOTP} className="login-form-container">
-                    <div className="form-group">
-                      <label className="form-label">Email</label>
-                      <input
-                        type="email"
-                        placeholder="username@gmail.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="form-input-field"
-                      />
-                    </div>
-                    <button type="submit" className="login-action-btn" disabled={loading}>
-                      {loading ? <span className="btn-spinner"></span> : <span>Send Code</span>}
-                    </button>
-                  </form>
-                )}
-
-                {/* Step 2: Enter & Verify OTP Code */}
-                {signUpStep === 2 && (
-                  <form onSubmit={handleVerifyOTP} className="login-form-container">
-                    <div className="form-group">
-                      <label className="form-label">Email</label>
-                      <input
-                        type="email"
-                        value={email}
-                        disabled
-                        className="form-input-field"
-                        style={{ opacity: 0.65 }}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Verification Code</label>
-                      <input
-                        type="text"
-                        placeholder="Enter 6-digit code"
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value)}
-                        required
-                        maxLength={6}
-                        className="form-input-field"
-                        style={{ textAlign: "center", letterSpacing: "4px", fontSize: "1.1rem" }}
-                      />
-                    </div>
-                    <button type="submit" className="login-action-btn" disabled={loading}>
-                      {loading ? <span className="btn-spinner"></span> : <span>Verify Code</span>}
-                    </button>
-                    <button
-                      type="button"
-                      className="forgot-password-link"
-                      onClick={() => setSignUpStep(1)}
-                      style={{ marginTop: "0.25rem", textAlign: "center", alignSelf: "center" }}
-                    >
-                      Change Email
-                    </button>
-                  </form>
-                )}
-
-                {/* Step 3: Password setup and creation */}
-                {signUpStep === 3 && (
-                  <form onSubmit={handleSubmit} className="login-form-container">
-                    <div className="form-group">
-                      <label className="form-label">Password</label>
-                      <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="form-input-field"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Confirm Password</label>
-                      <input
-                        type="password"
-                        placeholder="Confirm Password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        className="form-input-field"
-                      />
-                    </div>
-                    <button type="submit" className="login-action-btn" disabled={loading}>
-                      {loading ? <span className="btn-spinner"></span> : <span>Create Account</span>}
-                    </button>
-                  </form>
-                )}
-              </>
+              <form onSubmit={handleSubmit} className="login-form-container">
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    placeholder="username@gmail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="form-input-field"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="form-input-field"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Confirm Password</label>
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="form-input-field"
+                  />
+                </div>
+                <button type="submit" className="login-action-btn" disabled={loading}>
+                  {loading ? <span className="btn-spinner"></span> : <span>Create Account</span>}
+                </button>
+              </form>
             )}
 
             {/* PASSWORD RESET FLOW */}
@@ -343,7 +227,7 @@ export default function Login() {
             )}
 
             {/* Social logins */}
-            {mode !== "reset" && signUpStep !== 3 && (
+            {mode !== "reset" && (
               <>
                 <div className="social-divider">
                   <span className="divider-line"></span>
@@ -374,17 +258,17 @@ export default function Login() {
             <div className="login-footer-text">
               {mode === "login" && (
                 <span>
-                  Don't have an account? <button type="button" className="footer-toggle-btn" onClick={() => { setMode("signup"); setSignUpStep(1); }}>Register for free</button>
+                  Don't have an account? <button type="button" className="footer-toggle-btn" onClick={() => navigate("/sing-in")}>Register for free</button>
                 </span>
               )}
               {mode === "signup" && (
                 <span>
-                  Already have an account? <button type="button" className="footer-toggle-btn" onClick={() => setMode("login")}>Sign in</button>
+                  Already have an account? <button type="button" className="footer-toggle-btn" onClick={() => navigate("/log-in")}>Sign in</button>
                 </span>
               )}
               {mode === "reset" && (
                 <span>
-                  Back to <button type="button" className="footer-toggle-btn" onClick={() => setMode("login")}>Sign in</button>
+                  Back to <button type="button" className="footer-toggle-btn" onClick={() => navigate("/log-in")}>Sign in</button>
                 </span>
               )}
             </div>

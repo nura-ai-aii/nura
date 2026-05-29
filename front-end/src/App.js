@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Nabbar from './component/Nabbar';
 import { observeAuthState } from './firebaseAuth';
 import { saveChatSession } from './historyService';
@@ -103,8 +104,8 @@ function App() {
   const [blobColor, setBlobColor] = useState(localStorage.getItem('nura_blobColor') || '#00ffe1');
   const [blobSize, setBlobSize] = useState(Number(localStorage.getItem('nura_blobSize')) || 300);
   const [blobSensitivity] = useState(Number(localStorage.getItem('nura_blobSensitivity')) || 2.0);
-
-  const [transcript, setTranscript] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Firebase auth state
   const [currentUser, setCurrentUser] = useState(null);
@@ -115,6 +116,18 @@ function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const authRoutes = ['/log-in', '/sign-in', '/sing-in', '/register', '/forgot-password'];
+    if (!currentUser && !authRoutes.includes(location.pathname)) {
+      navigate('/log-in');
+    }
+    if (currentUser && authRoutes.includes(location.pathname)) {
+      navigate('/');
+    }
+  }, [currentUser, location.pathname, navigate]);
+
+  const [transcript, setTranscript] = useState("");
   const [interactionState, setInteractionState] = useState(STATE.IDLE);
   const [speechLang, setSpeechLang] = useState(localStorage.getItem('nura_speechLang') || 'en-US');
 
@@ -447,8 +460,14 @@ function App() {
         />
       )}
 
-      {/* Login Modal */}
-      {(!currentUser) && <Login />}
+      {/* Login Modal / Routing */}
+      <Routes>
+        <Route path="/log-in" element={<Login mode="login" />} />
+        <Route path="/sign-in" element={<Login mode="signup" />} />
+        <Route path="/sing-in" element={<Login mode="signup" />} />
+        <Route path="/register" element={<Login mode="signup" />} />
+        <Route path="/forgot-password" element={<Login mode="reset" />} />
+      </Routes>
 
       {!backgroundWakeWordMode && (
         <HUDWidgets
