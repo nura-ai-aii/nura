@@ -564,7 +564,7 @@ app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
     console.log("[Vision Core] Uploading image and sending to Groq multimodal core... 📸");
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.2-11b-vision-preview",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct",
       messages: [
         {
           role: "user",
