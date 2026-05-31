@@ -20,7 +20,8 @@ export default function ModelSelector({ selectedModel, setSelectedModel }) {
     { id: 'AUTO', label: 'AUTO ROUTING' },
     { id: 'gpt-5.4-pro', label: 'GPT-5.4 PRO' },
     { id: 'gemini-2.5-flash', label: 'GEMINI 2.5 FLASH' },
-    { id: 'llama-3.3-70b', label: 'LLAMA 3.3 70B' }
+    { id: 'llama-3.3-70b', label: 'LLAMA 3.3 70B' },
+    { id: 'MANUS', label: '🪐 Manus AI Agent' }
   ];
 
   const getActiveLabel = () => {

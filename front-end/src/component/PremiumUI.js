@@ -40,6 +40,8 @@ export default function PremiumUI({
   const [inputValue, setInputValue] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [primedImageFile, setPrimedImageFile] = useState(null);
+  const [manusTaskId, setManusTaskId] = useState(null);
+  const [manusStatus, setManusStatus] = useState(null);
   
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);

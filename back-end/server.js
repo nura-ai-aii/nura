@@ -234,6 +234,17 @@ TECHNICAL & CONVERSATIONAL CAPABILITIES:
 - Deliver precise, high-performance, and secure code.
 - Respond in the EXACT SAME language Master uses (Hindi, Bengali, English, or Kannada). Match Master's mood dynamically.`;
 
+app.get('/api/manus/status/:taskId', async (req, res) => {
+  const { taskId } = req.params;
+  try {
+    const status = await getManusTaskStatus(taskId);
+    res.json(status);
+  } catch (error) {
+    console.error('[Manus Status Endpoint Error]:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/chat', async (req, res) => {
   const { messages, language, model } = req.body;
   if (!messages) return res.status(400).json({ error: "Messages array required" });
@@ -248,6 +259,19 @@ app.post('/api/chat', async (req, res) => {
     let toolResults = [];
 
     // Check if a specific model override is selected
+    if (model && model === 'MANUS') {
+      console.log(`[AI] Manus model selected. Dispatching task...`);
+      const userPrompt = messages[messages.length - 1].content;
+      try {
+        const task = await dispatchManusTask(userPrompt);
+        // Return task ID for client to poll status
+        return res.json({ taskId: task.id, status: 'queued' });
+      } catch (e) {
+        console.error('[Manus Dispatch Failure]:', e.message);
+        return res.status(500).json({ error: 'Manus task dispatch failed' });
+      }
+    }
+
     if (model && model !== 'AUTO') {
       console.log(`[AI] Custom model override selected: ${model}`);
       if (model === 'gpt-5.4-pro') {
@@ -450,6 +474,50 @@ async function handleSystemCommand(action) {
       default: resolve("Command unknown");
     }
   });
+}
+
+const MANUS_API_KEY = process.env.MANUS_API_KEY || 'sk-7zkx05rjmCQ8drYWZnOKdWbW6N5tdNL3Cyn_K6JrwAJ44HIfCo6YAW3Io9bSZ9hFKZcdm8T7Wp6WRG4UPS4X9g4qm-OO';
+
+async function dispatchManusTask(prompt) {
+  try {
+    const response = await axios.post(
+      "https://api.manus.im/v1/tasks",
+      {
+        prompt: prompt,
+        agentProfile: "manus-1.6"
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${MANUS_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        timeout: 10000
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('[Manus Dispatch Error]:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+async function getManusTaskStatus(taskId) {
+  try {
+    const response = await axios.get(
+      `https://api.manus.im/v1/tasks/${taskId}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${MANUS_API_KEY}`,
+          "Accept": "application/json"
+        },
+        timeout: 5000
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error('[Manus Status Error]:', error.response?.data || error.message);
+    throw error;
+  }
 }
 
 async function callOpenRouterModel(messages) {
