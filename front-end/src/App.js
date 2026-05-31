@@ -19,6 +19,7 @@ import DraggableComponent from './component/DraggableComponent';
 import StatusTerminal from './component/StatusTerminal';
 import { BACKEND_URL } from './config';
 import BackgroundModeToggle from './component/BackgroundModeToggle';
+import ShareChat from './component/ShareChat';
 
 
 // Interaction States
@@ -144,8 +145,9 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const isShareRoute = location.pathname.startsWith('/share/');
     const authRoutes = ['/log-in', '/sign-in', '/sing-in', '/register', '/forgot-password'];
-    if (!currentUser && !authRoutes.includes(location.pathname)) {
+    if (!currentUser && !authRoutes.includes(location.pathname) && !isShareRoute) {
       navigate('/log-in');
       return;
     }
@@ -155,7 +157,7 @@ function App() {
     }
 
     // Synchronize pages based on current routing path
-    if (currentUser) {
+    if (currentUser && !isShareRoute) {
       const path = location.pathname;
       if (path === '/' || path === '/chat') {
         setShowTerminal(true);
@@ -494,6 +496,19 @@ function App() {
   const isListening = interactionState === STATE.LISTENING;
   const isProcessing = interactionState === STATE.THINKING;
   const isSpeaking = interactionState === STATE.SPEAKING;
+
+  const isShareRoute = location.pathname.startsWith('/share/');
+
+  if (isShareRoute) {
+    return (
+      <div className="App share-mode">
+        <AlertSystem apiHealth={apiHealth} />
+        <Routes>
+          <Route path="/share/:chatId" element={<ShareChat />} />
+        </Routes>
+      </div>
+    );
+  }
 
   return (
     <div className={`App ${backgroundWakeWordMode ? 'background-assistant-mode' : ''}`}>

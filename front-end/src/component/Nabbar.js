@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import './Navbar.css';
 import { signOutUser } from '../firebaseAuth';
-import { getChatSessions, deleteChatSession } from '../historyService';
+import { getChatSessions, deleteChatSession, createSharedChat } from '../historyService';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { emitAlert } from './AlertSystem';
 const logo = '/new-logo-hexper.png';
 
 export default function Nabbar({ 
@@ -60,6 +61,67 @@ export default function Nabbar({
       fetchHistory();
     }
   };
+
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharingSession, setSharingSession] = useState(null);
+  const [generatedShareUrl, setGeneratedShareUrl] = useState("");
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+
+  const handleShareSession = async (e, session) => {
+    e.stopPropagation();
+    setSharingSession(session);
+    setShowShareModal(true);
+    setIsGeneratingLink(true);
+    setGeneratedShareUrl("");
+
+    try {
+      const chatId = await createSharedChat(currentUser.uid, session.title, session.messages);
+      if (chatId) {
+        const url = `${window.location.origin}/share/${chatId}`;
+        setGeneratedShareUrl(url);
+      } else {
+        emitAlert('SYS_ERROR', 'UPLINK FAILURE: COULD NOT ESTABLISH SHARE LINK.', true);
+        setShowShareModal(false);
+      }
+    } catch (err) {
+      console.error("Error creating shared chat:", err);
+      emitAlert('SYS_ERROR', 'UPLINK FAILURE: COULD NOT ESTABLISH SHARE LINK.', true);
+      setShowShareModal(false);
+    } finally {
+      setIsGeneratingLink(false);
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    if (generatedShareUrl) {
+      navigator.clipboard.writeText(generatedShareUrl)
+        .then(() => {
+          emitAlert('SYS_RESTORED', 'TRANSMISSION SECURED: LINK COPIED TO CLIPBOARD! 🔗', false);
+        })
+        .catch((err) => {
+          console.error("Failed to copy link:", err);
+          emitAlert('SYS_ERROR', 'UPLINK FAILURE: FAILED TO COPY LINK.', true);
+        });
+    }
+  };
+
+  const getModalSocialUrl = (platform) => {
+    if (!generatedShareUrl) return "";
+    const url = encodeURIComponent(generatedShareUrl);
+    const text = encodeURIComponent(`Check out this conversation on Hexper AI: "${sharingSession?.title || 'Shared Chat'}"`);
+    
+    switch (platform) {
+      case 'whatsapp':
+        return `https://api.whatsapp.com/send?text=${text}%20${url}`;
+      case 'telegram':
+        return `https://t.me/share/url?url=${url}&text=${text}`;
+      case 'x':
+        return `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+      default:
+        return '';
+    }
+  };
+
 
   const handleAction = (text) => {
     setAlertText(text);
@@ -414,7 +476,7 @@ export default function Nabbar({
                         fontFamily: 'Inter, sans-serif'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden', width: '85%' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden', width: '70%' }}>
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'rgba(0, 245, 255, 0.7)', flexShrink: 0 }}>
                           <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
                         </svg>
@@ -423,30 +485,60 @@ export default function Nabbar({
                         </span>
                       </div>
                       
-                      {/* Delete Session Icon */}
-                      <button
-                        className="delete-history-item-btn"
-                        onClick={(e) => handleDeleteSession(e, session.sessionId)}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'rgba(255,255,255,0.4)',
-                          cursor: 'pointer',
-                          padding: '0.25rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          borderRadius: '6px',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                          <line x1="10" y1="11" x2="10" y2="17" />
-                          <line x1="14" y1="11" x2="14" y2="17" />
-                        </svg>
-                      </button>
+                      <div className="history-item-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {/* Share Session Icon */}
+                        <button
+                          className="share-history-item-btn"
+                          onClick={(e) => handleShareSession(e, session)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'rgba(0, 245, 255, 0.6)',
+                            cursor: 'pointer',
+                            padding: '0.25rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            transition: 'all 0.2s ease'
+                          }}
+                          title="Share Conversation"
+                        >
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                          </svg>
+                        </button>
+
+                        {/* Delete Session Icon */}
+                        <button
+                          className="delete-history-item-btn"
+                          onClick={(e) => handleDeleteSession(e, session.sessionId)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'rgba(255,255,255,0.4)',
+                            cursor: 'pointer',
+                            padding: '0.25rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '6px',
+                            transition: 'all 0.2s ease'
+                          }}
+                          title="Delete Conversation"
+                        >
+                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -454,6 +546,161 @@ export default function Nabbar({
             </div>
             <div className="modal-footer">
               SECURE SYNCED NEURAL ARCHIVES
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GLASSMORPHIC SHARE MODAL */}
+      {showShareModal && (
+        <div className="sci-fi-modal-overlay" onClick={() => setShowShareModal(false)} style={{ zIndex: 1100 }}>
+          <div className="sci-fi-modal-content share-transmission-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="modal-header">
+              <span>◆ SHARE TRANSMISSION</span>
+              <button className="modal-close" onClick={() => setShowShareModal(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <h3 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.3rem', margin: '0 0 8px 0', color: '#ffffff' }}>
+                {sharingSession?.title || "Shared Conversation"}
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 20px 0' }}>
+                Establish a public secure uplink clone of this neural memory block.
+              </p>
+
+              {isGeneratingLink ? (
+                <div style={{ padding: '2rem 0' }}>
+                  <div className="sci-fi-loading-bar" style={{ width: '80%', height: '3px', background: 'rgba(0, 245, 255, 0.15)', borderRadius: '10px', overflow: 'hidden', margin: '0 auto 10px auto' }}>
+                    <div className="loading-fill" style={{ height: '100%', width: '40%', background: 'linear-gradient(90deg, transparent, #00F5FF, transparent)', animation: 'loadingSlide 1.5s infinite linear' }}></div>
+                  </div>
+                  <span style={{ fontSize: '0.85rem', color: '#00F5FF', fontFamily: 'Rajdhani, sans-serif', letterSpacing: '1.5px' }}>
+                    GENERATING PUBLIC STREAM SECURE LINK...
+                  </span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+                  <div className="share-link-input-wrap" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'rgba(3, 7, 18, 0.85)',
+                    border: '1px solid rgba(0, 245, 255, 0.25)',
+                    borderRadius: '12px',
+                    padding: '8px 12px',
+                    gap: '10px'
+                  }}>
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={generatedShareUrl} 
+                      style={{
+                        flex: 1,
+                        background: 'transparent',
+                        border: 'none',
+                        outline: 'none',
+                        color: '#ffffff',
+                        fontSize: '0.85rem',
+                        fontFamily: 'Courier New, monospace'
+                      }}
+                    />
+                    <button 
+                      onClick={handleCopyShareLink}
+                      style={{
+                        background: 'rgba(0, 245, 255, 0.1)',
+                        border: '1px solid #00F5FF',
+                        borderRadius: '8px',
+                        color: '#00F5FF',
+                        padding: '6px 12px',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        fontFamily: 'Rajdhani, sans-serif'
+                      }}
+                    >
+                      COPY
+                    </button>
+                  </div>
+
+                  <div className="modal-social-deck" style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    marginTop: '10px'
+                  }}>
+                    <a 
+                      href={getModalSocialUrl('whatsapp')} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: '10px',
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        background: 'rgba(37, 211, 102, 0.05)',
+                        color: '#25d366'
+                      }}
+                    >
+                      WhatsApp
+                    </a>
+                    <a 
+                      href={getModalSocialUrl('telegram')} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: '10px',
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        background: 'rgba(0, 136, 204, 0.05)',
+                        color: '#33b1ff'
+                      }}
+                    >
+                      Telegram
+                    </a>
+                    <a 
+                      href={getModalSocialUrl('x')} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: '10px',
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.25s ease',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        color: '#ffffff'
+                      }}
+                    >
+                      X
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              SECURE STREAM PROPAGATOR ACTIVE
             </div>
           </div>
         </div>
