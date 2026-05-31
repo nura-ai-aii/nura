@@ -476,6 +476,11 @@ export default function PremiumUI({
               )}
 
               <div ref={messagesEndRef} />
+{generatedVideoUrl && (
+  <div className="generated-video-wrapper" style={{ marginTop: '1rem' }}>
+    <video src={generatedVideoUrl} controls style={{ maxWidth: '100%', borderRadius: '8px' }} />
+  </div>
+)}
             </div>
           ) : (
             /* EMPTY VIEWPORT WELCOME CARD Layout (Identical to user screenshot layout!) */
@@ -630,6 +635,22 @@ export default function PremiumUI({
             </div>
           </div>
         </div>
+{/* Mobile Footer for Mobile Devices */}
+<div className="mobile-footer">
+  <button className="mobile-gen-btn" onClick={handleGenerateShortVideo} title="Generate 15s Video (Mobile)">
+    🎥 15s Video
+  </button>
+  <button className="mobile-voice-btn" onClick={handleMicClick} title="Voice Input (Mobile)">
+    🎤
+  </button>
+  <div className="mobile-numbered-menu">
+    <button className="menu-item" onClick={() => handleCardClick('Create an image of ')}><span className="menu-number">1.</span> Image</button>
+    <button className="menu-item" onClick={() => handleCardClick('Generate a video with AI of ')}><span className="menu-number">2.</span> Video</button>
+    <button className="menu-item" onClick={handleAnimateImageClick}><span className="menu-number">3.</span> Animate</button>
+    <button className="menu-item" onClick={() => handleCardClick('Create a modern website layout for ')}><span className="menu-number">4.</span> Website</button>
+    <button className="menu-item" onClick={() => handleCardClick('Write or edit')}><span className="menu-number">5.</span> Write</button>
+  </div>
+</div>
       </main>
     </div>
   );
