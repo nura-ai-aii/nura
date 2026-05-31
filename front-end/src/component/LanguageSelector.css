@@ -55,7 +55,7 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  min-width: 150px;
+  width: 240px;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
   animation: slideUp 0.3s ease-out;
 }
@@ -73,6 +73,10 @@
   font-weight: 600;
   letter-spacing: 1px;
   transition: all 0.2s ease;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lang-option:hover {
@@ -104,4 +108,65 @@
 @keyframes slideDownMobile {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Search input styling */
+.lang-search-input {
+  width: 100%;
+  background: rgba(5, 8, 22, 0.85);
+  border: 1px solid rgba(0, 255, 225, 0.3);
+  border-radius: 4px;
+  color: #ffffff;
+  padding: 8px 12px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+  outline: none;
+  margin-bottom: 6px;
+  box-shadow: inset 0 0 10px rgba(0, 255, 225, 0.05);
+  transition: all 0.25s ease;
+}
+
+.lang-search-input:focus {
+  border-color: #00ffe1;
+  box-shadow: 0 0 10px rgba(0, 255, 225, 0.25), inset 0 0 10px rgba(0, 255, 225, 0.1);
+}
+
+/* Scrollable Options List Container */
+.lang-options-list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-right: 4px;
+}
+
+/* Custom Scrollbar for Options List */
+.lang-options-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.lang-options-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.lang-options-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 225, 0.3);
+  border-radius: 4px;
+}
+
+.lang-options-list::-webkit-scrollbar-thumb:hover {
+  background: #00ffe1;
+}
+
+/* No Results Label */
+.lang-no-results {
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 10px 0;
 }
