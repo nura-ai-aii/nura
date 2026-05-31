@@ -652,10 +652,7 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
 
   try {
     if (type === 'image-to-video') {
-      const deapiKey = process.env.DEAPI_API_KEY;
-      if (!deapiKey) {
-        return res.status(500).json({ error: "DEAPI_API_KEY is not configured on the server." });
-      }
+      const deapiKey = process.env.DEAPI_API_KEY || '12461|5T9hPIyP8JzB74ChrR8yQmZyPC3hXknbjebTmDDAee56f529';
 
       if (!req.file) {
         return res.status(400).json({ error: "No image file provided for image-to-video generation." });
@@ -721,10 +718,7 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
       }
 
     } else if (type === 'video') {
-      const json2videoKey = process.env.JSON2VIDEO_API_KEY;
-      if (!json2videoKey) {
-        return res.status(500).json({ error: "JSON2VIDEO_API_KEY is not configured on the server." });
-      }
+      const json2videoKey = process.env.JSON2VIDEO_API_KEY || 'Ng0FQKfiHI9CpfuUtugk5dlPhqYGs0QBGl5B9bAx';
 
       console.log(`[JSON2VIDEO] Triggering render job for: "${prompt}"`);
       const response = await axios.post('https://api.json2video.com/v2/movies', {
