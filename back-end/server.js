@@ -642,19 +642,90 @@ app.post('/api/tts', async (req, res) => {
 });
 
 // ──────────────────────────────────────────────
-// JSON2VIDEO PREMIUM MEDIA GENERATION
+// PREMIUM MEDIA GENERATION (JSON2VIDEO + DEAPI)
 // ──────────────────────────────────────────────
-app.post('/api/generate-media', async (req, res) => {
-  const { type, prompt } = req.body;
+app.post('/api/generate-media', upload.single('image'), async (req, res) => {
+  const type = req.body.type || 'video';
+  const prompt = req.body.prompt;
+
   if (!prompt) return res.status(400).json({ error: "No prompt provided" });
 
-  const json2videoKey = process.env.JSON2VIDEO_API_KEY;
-  if (!json2videoKey) {
-    return res.status(500).json({ error: "JSON2VIDEO_API_KEY is not configured on the server." });
-  }
-
   try {
-    if (type === 'video') {
+    if (type === 'image-to-video') {
+      const deapiKey = process.env.DEAPI_API_KEY;
+      if (!deapiKey) {
+        return res.status(500).json({ error: "DEAPI_API_KEY is not configured on the server." });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No image file provided for image-to-video generation." });
+      }
+
+      console.log(`[DEAPI] Triggering LTX-2 Image-to-Video render job for: "${prompt}"`);
+      
+      const FormData = require('form-data');
+      const form = new FormData();
+      form.append('prompt', prompt);
+      form.append('model', 'Ltx2_19B_Dist_FP8');
+      form.append('width', 1024);
+      form.append('height', 1024);
+      form.append('frames', 96); // 4 seconds at 24fps
+      form.append('fps', 24);
+      form.append('first_frame_image', req.file.buffer, {
+        filename: req.file.originalname || 'image.png',
+        contentType: req.file.mimetype || 'image/png'
+      });
+
+      const response = await axios.post('https://api.deapi.ai/api/v2/videos/animations', form, {
+        headers: {
+          ...form.getHeaders(),
+          'Authorization': `Bearer ${deapiKey}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      const requestId = response.data.data?.request_id;
+      if (!requestId) {
+        throw new Error("No request ID returned by deAPI");
+      }
+
+      console.log(`[DEAPI] Render job created. Request ID: ${requestId}. Starting polling...`);
+
+      // Poll every 4 seconds for up to 20 times (total 80 seconds timeout)
+      let videoUrl = "";
+      for (let i = 0; i < 20; i++) {
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        
+        const statusRes = await axios.get(`https://api.deapi.ai/api/v2/jobs/${requestId}`, {
+          headers: {
+            'Authorization': `Bearer ${deapiKey}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        const job = statusRes.data.data;
+        console.log(`[DEAPI] Polling status iteration ${i+1}: ${job.status} (progress: ${job.progress || 0}%)`);
+        
+        if (job.status === 'done' && job.result_url) {
+          videoUrl = job.result_url;
+          break;
+        } else if (job.status === 'error') {
+          throw new Error("deAPI render job failed");
+        }
+      }
+
+      if (videoUrl) {
+        return res.json({ url: videoUrl });
+      } else {
+        throw new Error("deAPI render job timed out");
+      }
+
+    } else if (type === 'video') {
+      const json2videoKey = process.env.JSON2VIDEO_API_KEY;
+      if (!json2videoKey) {
+        return res.status(500).json({ error: "JSON2VIDEO_API_KEY is not configured on the server." });
+      }
+
       console.log(`[JSON2VIDEO] Triggering render job for: "${prompt}"`);
       const response = await axios.post('https://api.json2video.com/v2/movies', {
         width: 1024,
@@ -712,11 +783,11 @@ app.post('/api/generate-media', async (req, res) => {
         throw new Error("json2video render job timed out");
       }
     } else {
-      return res.status(400).json({ error: "json2video is only configured for video rendering." });
+      return res.status(400).json({ error: "Unsupported media generation type." });
     }
   } catch (error) {
-    console.error('[JSON2VIDEO Generation Error]:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'json2video premium media generation failed.' });
+    console.error('[Media Generation Error]:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'Media generation failed.' });
   }
 });
 

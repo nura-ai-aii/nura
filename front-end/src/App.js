@@ -300,12 +300,54 @@ function App() {
   };
 
   // Chat logic
-  const callNeuralCore = async (userInput) => {
+  const callNeuralCore = async (userInput, imageFile) => {
     if (!userInput || interactionState === STATE.THINKING) return;
 
     setInteractionState(STATE.THINKING);
     setAiResponse("Analyzing...");
     setShowTerminal(true);
+
+    // If an image file is attached and the intent is video generation, trigger the premium LTX-2 image-to-video core directly!
+    if (imageFile && (userInput.toLowerCase().includes("video") || userInput.toLowerCase().includes("animate"))) {
+      setAiResponse("Triggering premium LTX-2 Image-to-Video rendering... 🎥");
+      emitAlert('MEDIA', "COMMITTING STARTING FRAME TO LTX-2 19B CORES... 🎬", false);
+
+      try {
+        const formData = new FormData();
+        formData.append('type', 'image-to-video');
+        formData.append('prompt', userInput.replace(/^generate video from image:\s*/i, ''));
+        formData.append('image', imageFile);
+
+        const res = await fetch(`${BACKEND_URL}/api/generate-media`, {
+          method: 'POST',
+          body: formData
+        });
+        const mediaData = await res.json();
+        
+        if (mediaData.url) {
+          setGeneratedImage({
+            type: 'video',
+            url: mediaData.url
+          });
+          setAiResponse("LTX-2 19B video generation completed successfully!\n\nHere is your animated video with synchronized matching audio loop generated from your starting frame.");
+          setChatHistory(prev => [
+            ...prev,
+            { role: "user", content: `[Generated LTX-2 video from image with prompt: "${userInput}"]` },
+            { role: "assistant", content: "Successfully generated video from your starting frame using LTX-2 19B Distilled!" }
+          ]);
+          emitAlert('SYS_RESTORED', 'LTX-2 PREMIUM VIDEO GENERATION COMPLETED! 🎬', false);
+          speakResponse("Starting frame animated successfully, Master.", speechLang);
+        } else {
+          throw new Error("Invalid video URL returned");
+        }
+      } catch (err) {
+        console.error("LTX-2 video generation failed:", err);
+        setAiResponse("UPLINK FAILURE: LTX-2 VIDEO GENERATOR UNREACHABLE.");
+        setInteractionState(STATE.IDLE);
+        emitAlert('SYS_ERROR', 'LTX-2 ANIMATION FAILED. COGNITIVE ENGINE OFFLINE.', true);
+      }
+      return;
+    }
 
     const newMessages = [...chatHistory, { role: "user", content: userInput }];
 
@@ -557,9 +599,9 @@ function App() {
           apiStatus={apiStatus}
           generatedImage={generatedImage}
           setGeneratedImage={setGeneratedImage}
-          onSendMessage={(msg) => {
+          onSendMessage={(msg, file) => {
             setTranscript(msg);
-            callNeuralCore(msg);
+            callNeuralCore(msg, file);
           }}
           onAnalyzeImage={callVisionCore}
           handleNewChat={handleNewChat}
@@ -726,9 +768,9 @@ function App() {
           isProcessing={isProcessing}
           showTerminal={showTerminal}
           activeMood={activeMood}
-          onSendMessage={(msg) => {
+          onSendMessage={(msg, file) => {
             setTranscript(msg);
-            callNeuralCore(msg);
+            callNeuralCore(msg, file);
           }}
           onAnalyzeImage={callVisionCore}
           chatHistory={chatHistory}

@@ -39,6 +39,7 @@ export default function PremiumUI({
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
+  const [primedImageFile, setPrimedImageFile] = useState(null);
   
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -73,8 +74,10 @@ export default function PremiumUI({
 
   const handleSend = () => {
     if (inputValue.trim()) {
-      onSendMessage(inputValue.trim());
+      onSendMessage(inputValue.trim(), primedImageFile);
       setInputValue("");
+      setPrimedImageFile(null);
+      setImagePreview(null);
     }
   };
 
@@ -103,17 +106,31 @@ export default function PremiumUI({
       };
       reader.readAsDataURL(file);
 
-      if (onAnalyzeImage) {
-        onAnalyzeImage(file);
+      if (inputValue.toLowerCase().includes("video from image") || inputValue.toLowerCase().includes("animate")) {
+        setPrimedImageFile(file);
+        emitAlert('SYS_CONSOLE', 'STARTING FRAME PRIMED FOR LTX-2 ANIMATION. TYPE A PROMPT AND SEND!', false);
+      } else {
+        if (onAnalyzeImage) {
+          onAnalyzeImage(file);
+        }
       }
     }
   };
 
   const clearImagePreview = () => {
     setImagePreview(null);
+    setPrimedImageFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const handleAnimateImageClick = () => {
+    setInputValue("Generate video from image: ");
+    setTimeout(() => {
+      if (fileInputRef.current) fileInputRef.current.click();
+    }, 150);
+    emitAlert('SYS_WAKEWORD', 'SELECT A STARTING FRAME IMAGE FOR LTX-2 19B VIDEO GENERATION.', false);
   };
 
   const handleCardClick = (promptText) => {
@@ -176,6 +193,10 @@ export default function PremiumUI({
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Generate a video with AI of ")}>
               <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>🎥</span>
               <span>Generate Video with AI</span>
+            </button>
+            <button className="sidebar-nav-item" onClick={() => handleAnimateImageClick()}>
+              <span className="nav-item-icon video" style={{ background: 'rgba(167, 139, 250, 0.15)', color: '#c084fc' }}>🖼️</span>
+              <span>Animate Image with LTX-2</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Create a modern website layout for ")}>
               <span className="nav-item-icon website">🌐</span>
@@ -452,6 +473,15 @@ export default function PremiumUI({
                   <span className="action-card-arrow">→</span>
                 </div>
 
+                <div className="action-card-pill" onClick={() => handleAnimateImageClick()}>
+                  <div className="action-card-top">
+                    <span className="action-card-icon image-video" style={{ background: 'rgba(167, 139, 250, 0.12)' }}>🖼️</span>
+                    <h3>Animate Image</h3>
+                  </div>
+                  <p>Render video from image using LTX-2</p>
+                  <span className="action-card-arrow">→</span>
+                </div>
+
                 <div className="action-card-pill" onClick={() => handleCardClick("Help me write and enhance: ")}>
                   <div className="action-card-top">
                     <span className="action-card-icon write">✍️</span>
@@ -509,7 +539,9 @@ export default function PremiumUI({
             <div className="premium-scan-image-preview">
               <img src={imagePreview} alt="Primed scan upload" />
               <button className="remove-preview-btn" onClick={clearImagePreview}>✕</button>
-              <span className="preview-indicator-label">SCAN SCANNER PRIMED</span>
+              <span className="preview-indicator-label">
+                {primedImageFile ? "LTX-2 STARTING FRAME PRIMED" : "SCAN SCANNER PRIMED"}
+              </span>
             </div>
           )}
 
