@@ -582,21 +582,20 @@ function App() {
       </DraggableComponent>
 
       {!backgroundWakeWordMode && (
-        <DraggableComponent id="terminal" initialPos={{ bottom: 380, right: 30 }}>
-          <Terminal
-            transcript={transcript}
-            aiResponse={aiResponse}
-            isListening={isListening}
-            isProcessing={isProcessing}
-            showTerminal={showTerminal}
-            activeMood={activeMood}
-            onSendMessage={(msg) => {
-              setTranscript(msg);
-              callNeuralCore(msg);
-            }}
-            onAnalyzeImage={callVisionCore}
-          />
-        </DraggableComponent>
+        <Terminal
+          transcript={transcript}
+          aiResponse={aiResponse}
+          isListening={isListening}
+          isProcessing={isProcessing}
+          showTerminal={showTerminal}
+          activeMood={activeMood}
+          onSendMessage={(msg) => {
+            setTranscript(msg);
+            callNeuralCore(msg);
+          }}
+          onAnalyzeImage={callVisionCore}
+          chatHistory={chatHistory}
+        />
       )}
 
       {!backgroundWakeWordMode && (
