@@ -21,7 +21,9 @@ export default function Nabbar({
   showHistory: propShowHistory,
   setShowHistory: propSetShowHistory,
   showAbout: propShowAbout,
-  setShowAbout: propSetShowAbout
+  setShowAbout: propSetShowAbout,
+  uiMode,
+  setUiMode
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -135,7 +137,8 @@ export default function Nabbar({
 
   return (
     <>
-      <nav className="futuristic-navbar">
+      {uiMode !== 'premium' && (
+        <nav className="futuristic-navbar">
         {/* Futuristic SVG Frame Overlay - creates glowing brackets, tech lines & chamfered corners */}
         <div className="navbar-frame-container">
           <svg className="navbar-svg-frame" viewBox="0 0 1200 80" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -283,12 +286,12 @@ export default function Nabbar({
                 }}
               >
                 <svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="16" x2="12" y2="12" />
-                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <line x1="9" y1="3" x2="9" y2="21" />
+                  <line x1="9" y1="9" x2="21" y2="9" />
                 </svg>
                 <div className="tab-labels">
-                  <span className="tab-title">About</span>
+                  <span className="tab-title">UI Changer</span>
                 </div>
                 <div className="active-indicator"></div>
               </button>
@@ -336,6 +339,7 @@ export default function Nabbar({
           </button>
         </div>
       </nav>
+      )}
 
       {/* Futuristic Alert Notification Overlay */}
       {showAlert && (
@@ -348,30 +352,74 @@ export default function Nabbar({
         </div>
       )}
 
-      {/* ABOUT MODAL DOCK OVERLAY */}
+      {/* UI CHANGER MODAL DOCK OVERLAY */}
       {showAbout && (
         <div className="sci-fi-modal-overlay" onClick={() => navigate('/chat')}>
-          <div className="sci-fi-modal-content" onClick={e => e.stopPropagation()}>
+          <div className="sci-fi-modal-content ui-changer-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '580px' }}>
             <div className="modal-header">
-              <span>◆ SYSTEM DEFINITION FILE</span>
+              <span>◆ WORKSPACE SYSTEM UI CHANGER</span>
               <button className="modal-close" onClick={() => navigate('/chat')}>✕</button>
             </div>
-            <div className="modal-body">
-              <div className="system-orb-mini">
-                <div className="orb-core"></div>
-                <div className="orb-ring"></div>
+            <div className="modal-body" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <h3 style={{ fontSize: '1.3rem', fontFamily: 'Outfit, sans-serif', color: '#ffffff', margin: '0 0 6px 0' }}>Select Interface Mode</h3>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', margin: '0' }}>Adapt Hexper AI workspace to fit your workflow needs.</p>
               </div>
-              <h3>Hexpar AI v2.0.0</h3>
-              <p className="modal-desc">Quantum-Sentient Desktop Companion & Cognitive Core Interface.</p>
-              <div className="specs-table">
-                <div className="spec-row"><span>COGNITIVE CORE</span><span className="accent-cyan">GEMINI 2.5 FLASH / GPT-5-MINI</span></div>
-                <div className="spec-row"><span>REASONING PIPELINE</span><span className="accent-cyan">GROQ ULTRA-LOW LATENCY</span></div>
-                <div className="spec-row"><span>TTS EMOTION SYNTH</span><span className="accent-purple">EDGE-TTS NEURAL PIPELINE</span></div>
-                <div className="spec-row"><span>RELATIONSHIP LINK</span><span className="accent-purple">NEURAL SYNC FAMILIARITY V4.1</span></div>
+
+              <div className="ui-modes-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '10px' }}>
+                {/* Mode 1: Default SciFi HUD */}
+                <div 
+                  className={`ui-mode-card ${uiMode !== 'premium' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (setUiMode) setUiMode('default');
+                    emitAlert('SYS_RESTORED', 'COGNITIVE TELEMETRY LOADED: SCI-FI HUD ACTIVE! 🔮', false);
+                  }}
+                  style={{
+                    background: uiMode !== 'premium' ? 'rgba(0, 245, 255, 0.08)' : 'rgba(255,255,255,0.02)',
+                    border: uiMode !== 'premium' ? '1px solid #00F5FF' : '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    textAlign: 'center',
+                    boxShadow: uiMode !== 'premium' ? '0 0 15px rgba(0, 245, 255, 0.15)' : 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔮</div>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '1rem', color: '#ffffff', fontWeight: '700' }}>Sci-Fi HUD</h4>
+                  <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: '0', lineHeight: '1.4' }}>
+                    Interactive speech telemetry, drifting plasma blobs, and draggable widgets.
+                  </p>
+                </div>
+
+                {/* Mode 2: Premium Minimal UI */}
+                <div 
+                  className={`ui-mode-card ${uiMode === 'premium' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (setUiMode) setUiMode('premium');
+                    emitAlert('SYS_RESTORED', 'INTERFACE MODIFIED: HEXPER PREMIUM ACTIVE! 💎', false);
+                  }}
+                  style={{
+                    background: uiMode === 'premium' ? 'rgba(139, 92, 246, 0.08)' : 'rgba(255,255,255,0.02)',
+                    border: uiMode === 'premium' ? '1px solid #8b5cf6' : '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '16px',
+                    padding: '20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    textAlign: 'center',
+                    boxShadow: uiMode === 'premium' ? '0 0 15px rgba(139, 92, 246, 0.15)' : 'none'
+                  }}
+                >
+                  <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💎</div>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '1rem', color: '#ffffff', fontWeight: '700' }}>Hexper Premium</h4>
+                  <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: '0', lineHeight: '1.4' }}>
+                    Clean, state-of-the-art layout matching modern chat systems with persistent sidebars.
+                  </p>
+                </div>
               </div>
             </div>
             <div className="modal-footer">
-              SECURE SYSTEM ENCRYPTION VALIDATED
+              SYSTEM DEFINITION FILE ADAPTIVE PORT ACTIVE
             </div>
           </div>
         </div>

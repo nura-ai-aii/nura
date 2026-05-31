@@ -12,12 +12,12 @@ const playAlertSound = (type) => {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-    const playBeep = (freq, startTime, duration, vol = 0.4) => {
+    const playTone = (freq, startTime, duration, vol = 0.15, waveType = 'sine') => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.type = 'square';
+      osc.type = waveType;
       osc.frequency.setValueAtTime(freq, startTime);
       gain.gain.setValueAtTime(vol, startTime);
       gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
@@ -28,25 +28,20 @@ const playAlertSound = (type) => {
     const now = ctx.currentTime;
 
     if (type === 'error' || type === 'critical') {
-      // 3 descending warning beeps — JARVIS-style alert
-      playBeep(880, now, 0.18, 0.5);
-      playBeep(660, now + 0.22, 0.18, 0.45);
-      playBeep(440, now + 0.44, 0.3, 0.5);
-      // Repeat after 2 seconds for critical
-      if (type === 'critical') {
-        setTimeout(() => playAlertSound('error'), 2000);
-      }
+      // Gentle, low-frequency minor-third warning chime
+      playTone(523.25, now, 0.25, 0.12, 'triangle'); // C5
+      playTone(392.00, now + 0.1, 0.35, 0.1, 'triangle'); // G4
     } else if (type === 'success') {
-      // 2 ascending confirmation tones
-      playBeep(660, now, 0.12, 0.25);
-      playBeep(880, now + 0.16, 0.2, 0.3);
+      // Soft, high-tech dual major chord chime (positive, uplifting digital notice)
+      playTone(783.99, now, 0.12, 0.08, 'sine'); // G5
+      playTone(1046.50, now + 0.08, 0.18, 0.06, 'sine'); // C6
     } else if (type === 'warning') {
-      // Play custom warning sound file
-      const audio = new Audio('/warning.mp3');
-      audio.play();
+      // Pleasant alert chime
+      playTone(587.33, now, 0.15, 0.1, 'sine'); // D5
+      playTone(698.46, now + 0.08, 0.2, 0.08, 'sine'); // F5
     } else {
-      // Single soft notice beep
-      playBeep(600, now, 0.15, 0.2);
+      // Soft liquid tech ping
+      playTone(880, now, 0.08, 0.08, 'sine'); // A5
     }
   } catch (e) {
     // Audio not supported — silent fallback

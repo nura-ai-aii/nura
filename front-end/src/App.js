@@ -20,6 +20,7 @@ import StatusTerminal from './component/StatusTerminal';
 import { BACKEND_URL } from './config';
 import BackgroundModeToggle from './component/BackgroundModeToggle';
 import ShareChat from './component/ShareChat';
+import PremiumUI from './component/PremiumUI';
 
 
 // Interaction States
@@ -110,6 +111,7 @@ function App() {
 
   // Firebase auth state
   const [currentUser, setCurrentUser] = useState(null);
+  const [uiMode, setUiMode] = useState(localStorage.getItem('nura_uiMode') || 'default');
 
   // UI Panel states
   const [showStatus, setShowStatus] = useState(false);
@@ -510,6 +512,81 @@ function App() {
     );
   }
 
+  if (uiMode === 'premium') {
+    return (
+      <div className="App premium-mode">
+        <AlertSystem apiHealth={apiHealth} />
+        <PremiumUI 
+          currentUser={currentUser}
+          chatHistory={chatHistory}
+          transcript={transcript}
+          aiResponse={aiResponse}
+          interactionState={interactionState}
+          speechLang={speechLang}
+          setSpeechLang={setSpeechLang}
+          selectedModel={selectedModel}
+          setSelectedModel={setSelectedModel}
+          activeMood={activeMood}
+          setActiveMood={setActiveMood}
+          blobColor={blobColor}
+          setBlobColor={setBlobColor}
+          blobSize={blobSize}
+          setBlobSize={setBlobSize}
+          apiHealth={apiHealth}
+          apiStatus={apiStatus}
+          generatedImage={generatedImage}
+          setGeneratedImage={setGeneratedImage}
+          onSendMessage={(msg) => {
+            setTranscript(msg);
+            callNeuralCore(msg);
+          }}
+          onAnalyzeImage={callVisionCore}
+          handleNewChat={handleNewChat}
+          currentSessionId={currentSessionId}
+          setCurrentSessionId={setCurrentSessionId}
+          onLoadSession={(sessionId, messages) => {
+            setCurrentSessionId(sessionId);
+            setChatHistory(messages);
+            if (messages && messages.length > 0) {
+              setAiResponse(messages[messages.length - 1].content);
+            }
+          }}
+          uiMode={uiMode}
+          setUiMode={(mode) => {
+            setUiMode(mode);
+            localStorage.setItem('nura_uiMode', mode);
+          }}
+          setShowAbout={setShowAbout}
+        />
+        {/* Render Nabbar's overlays */}
+        <Nabbar
+          showStatus={showStatus} setShowStatus={setShowStatus}
+          showTerminal={showTerminal} setShowTerminal={setShowTerminal}
+          apiHealth={apiHealth}
+          showHUD={showHUD} setShowHUD={setShowHUD}
+          showHistory={showHistory} setShowHistory={setShowHistory}
+          showAbout={showAbout} setShowAbout={setShowAbout}
+          currentUser={currentUser}
+          setCurrentUser={setCurrentUser}
+          onNewChat={handleNewChat}
+          uiMode={uiMode}
+          setUiMode={(mode) => {
+            setUiMode(mode);
+            localStorage.setItem('nura_uiMode', mode);
+          }}
+        />
+        {/* Login Modal / Routing overlays */}
+        <Routes>
+          <Route path="/log-in" element={<Login mode="login" />} />
+          <Route path="/sign-in" element={<Login mode="signup" />} />
+          <Route path="/sing-in" element={<Login mode="signup" />} />
+          <Route path="/register" element={<Login mode="signup" />} />
+          <Route path="/forgot-password" element={<Login mode="reset" />} />
+        </Routes>
+      </div>
+    );
+  }
+
   return (
     <div className={`App ${backgroundWakeWordMode ? 'background-assistant-mode' : ''}`}>
       {isStarting && <StartupSequence onComplete={handleStartupComplete} />}
@@ -534,6 +611,11 @@ function App() {
             }
             setShowTerminal(true);
             setShowStatus(false);
+          }}
+          uiMode={uiMode}
+          setUiMode={(mode) => {
+            setUiMode(mode);
+            localStorage.setItem('nura_uiMode', mode);
           }}
         />
       )}
