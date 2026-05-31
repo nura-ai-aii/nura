@@ -42,6 +42,7 @@ export default function PremiumUI({
   const [primedImageFile, setPrimedImageFile] = useState(null);
   const [manusTaskId, setManusTaskId] = useState(null);
   const [manusStatus, setManusStatus] = useState(null);
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState(null);
   
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -139,6 +140,31 @@ export default function PremiumUI({
     setInputValue(promptText);
   };
 
+  const handleGenerateShortVideo = async () => {
+    if (!inputValue.trim()) {
+      emitAlert('SYS_ERROR', 'Prompt required for video generation.', true);
+      return;
+    }
+    setGeneratedVideoUrl(null);
+    try {
+      const res = await fetch('/api/generate-short-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: inputValue.trim(), duration: 15 })
+      });
+      const data = await res.json();
+      if (data.videoUrl) {
+        setGeneratedVideoUrl(data.videoUrl);
+        emitAlert('SYS_SUCCESS', 'Video generated successfully!', false);
+      } else {
+        emitAlert('SYS_ERROR', data.error || 'Failed to generate video.', true);
+      }
+    } catch (e) {
+      console.error('[Short Video UI]', e);
+      emitAlert('SYS_ERROR', 'Error contacting server.', true);
+    }
+  };
+
   const handleDeleteSession = async (e, sessionId) => {
     e.stopPropagation();
     if (currentUser) {
@@ -195,6 +221,10 @@ export default function PremiumUI({
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Generate a video with AI of ")}>
               <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>🎥</span>
               <span>Generate Video with AI</span>
+            </button>
+            <button className="sidebar-nav-item" onClick={handleGenerateShortVideo}>
+              <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>⏱️</span>
+              <span>Generate 15s Video</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleAnimateImageClick()}>
               <span className="nav-item-icon video" style={{ background: 'rgba(167, 139, 250, 0.15)', color: '#c084fc' }}>🖼️</span>

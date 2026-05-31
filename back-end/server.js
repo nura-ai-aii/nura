@@ -853,6 +853,60 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
   }
 });
 
+  // ------------------------------------------------
+  // KIE.ai Short Video Generation (15‑second default)
+  // ------------------------------------------------
+  app.post('/api/generate-short-video', async (req, res) => {
+    const { prompt, duration = 15 } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'Prompt is required' });
+
+    const kieApiKey = process.env.VIDEO_API_KEY;
+    const kieBaseUrl = process.env.VIDEO_API_URL || 'https://api.kie.ai';
+    const endpoint = `${kieBaseUrl}/v1/veo/create`;
+
+    try {
+      // Initiate video generation job
+      const initRes = await axios.post(endpoint, {
+        prompt,
+        duration,
+        model: 'veo', // default model
+      }, {
+        headers: {
+          Authorization: `Bearer ${kieApiKey}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const jobId = initRes.data?.jobId || initRes.data?.id;
+      if (!jobId) throw new Error('No job ID returned');
+
+      // Poll for completion (max 30 seconds, 2‑second interval)
+      const pollEndpoint = `${kieBaseUrl}/v1/jobs/recordInfo`;
+      let videoUrl = null;
+      for (let i = 0; i < 15; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        const pollRes = await axios.get(pollEndpoint, {
+          params: { jobId },
+          headers: { Authorization: `Bearer ${kieApiKey}` },
+        });
+        const status = pollRes.data?.status?.toLowerCase();
+        if (status === 'completed') {
+          videoUrl = pollRes.data?.result?.url || pollRes.data?.videoUrl;
+          break;
+        }
+        if (status === 'failed') {
+          throw new Error('KIE.ai video generation failed');
+        }
+      }
+
+      if (!videoUrl) throw new Error('Video generation timed out');
+      res.json({ videoUrl });
+    } catch (err) {
+      console.error('[KIE Short Video Error]:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
 // Memory store for OTPs
 const otpStore = new Map();
 
