@@ -481,3 +481,115 @@ body.mood-hw-body .log-highlight {
   background: radial-gradient(circle at center, rgba(35, 12, 2, 0.98) 0%, rgba(12, 4, 0, 1) 100%) !important;
 }
 
+/* ──────────────────────────────────────────────
+   WELCOME VIDEO POPUP SYSTEM
+   ────────────────────────────────────────────── */
+.welcome-video-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 10000; /* Must be on top of everything */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInOverlay 0.4s ease-out;
+}
+
+.welcome-video-container {
+  width: 90%;
+  max-width: 800px;
+  background: rgba(10, 15, 30, 0.6);
+  border: 1px solid rgba(0, 255, 225, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(0, 255, 225, 0.2), inset 0 0 20px rgba(0, 255, 225, 0.05);
+  overflow: hidden;
+  position: relative;
+  animation: scaleInVideo 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-video-header {
+  padding: 1rem 1.5rem;
+  background: rgba(3, 7, 18, 0.9);
+  border-bottom: 1px solid rgba(0, 255, 225, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.welcome-video-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #00ffe1;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 225, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.welcome-video-title-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ffe1;
+  box-shadow: 0 0 8px #00ffe1;
+  animation: blinkWelcomeDot 1s infinite alternate;
+}
+
+.welcome-video-close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 225, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.welcome-video-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+.welcome-video-body {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  position: relative;
+}
+
+.welcome-video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleInVideo {
+  from { transform: scale(0.9) translateY(20px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes blinkWelcomeDot {
+  from { opacity: 0.3; }
+  to { opacity: 1; }
+}
+

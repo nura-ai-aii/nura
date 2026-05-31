@@ -116,6 +116,25 @@ function App() {
   const [showHUD, setShowHUD] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showWelcomeVideo, setShowWelcomeVideo] = useState(true);
+  const welcomeVideoRef = useRef(null);
+
+  useEffect(() => {
+    if (showWelcomeVideo && welcomeVideoRef.current) {
+      const playPromise = welcomeVideoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log("Autoplay was prevented, playing muted fallback:", error);
+          if (welcomeVideoRef.current) {
+            welcomeVideoRef.current.muted = true;
+            welcomeVideoRef.current.play().catch(err => {
+              console.error("Muted autoplay also failed:", err);
+            });
+          }
+        });
+      }
+    }
+  }, [showWelcomeVideo]);
 
   useEffect(() => {
     const unsubscribe = observeAuthState((user) => {
@@ -622,6 +641,32 @@ function App() {
             )}
           </div>
           <p className="image-footer">CLICK ANYWHERE TO DISMISS</p>
+        </div>
+      )}
+      {showWelcomeVideo && (
+        <div className="welcome-video-overlay">
+          <div className="welcome-video-container">
+            <div className="welcome-video-header">
+              <div className="welcome-video-title">
+                <span className="welcome-video-title-dot"></span>
+                HEXPER SYSTEM BROADCAST
+              </div>
+              <button className="welcome-video-close-btn" onClick={() => setShowWelcomeVideo(false)}>
+                ✕ SKIP TRANSMISSION
+              </button>
+            </div>
+            <div className="welcome-video-body">
+              <video 
+                ref={welcomeVideoRef}
+                src="/welcomenew-pop-up.mp4" 
+                className="welcome-video-player"
+                autoPlay 
+                playsInline
+                controls={false}
+                onEnded={() => setShowWelcomeVideo(false)}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
