@@ -173,6 +173,10 @@ export default function PremiumUI({
               <span className="nav-item-icon image">🎨</span>
               <span>AI Image Generator</span>
             </button>
+            <button className="sidebar-nav-item" onClick={() => handleCardClick("Generate a video with AI of ")}>
+              <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>🎥</span>
+              <span>Generate Video with AI</span>
+            </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Create a modern website layout for ")}>
               <span className="nav-item-icon website">🌐</span>
               <span>Website Generator</span>
@@ -436,6 +440,15 @@ export default function PremiumUI({
                     <h3>Create an Image</h3>
                   </div>
                   <p>Generate stunning images with AI</p>
+                  <span className="action-card-arrow">→</span>
+                </div>
+
+                <div className="action-card-pill" onClick={() => handleCardClick("Generate a video with AI of ")}>
+                  <div className="action-card-top">
+                    <span className="action-card-icon video" style={{ background: 'rgba(239, 68, 68, 0.12)' }}>🎥</span>
+                    <h3>Generate Video</h3>
+                  </div>
+                  <p>Render gorgeous animated loops with AI</p>
                   <span className="action-card-arrow">→</span>
                 </div>
 

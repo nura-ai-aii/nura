@@ -641,6 +641,85 @@ app.post('/api/tts', async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────────
+// JSON2VIDEO PREMIUM MEDIA GENERATION
+// ──────────────────────────────────────────────
+app.post('/api/generate-media', async (req, res) => {
+  const { type, prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: "No prompt provided" });
+
+  const json2videoKey = process.env.JSON2VIDEO_API_KEY;
+  if (!json2videoKey) {
+    return res.status(500).json({ error: "JSON2VIDEO_API_KEY is not configured on the server." });
+  }
+
+  try {
+    if (type === 'video') {
+      console.log(`[JSON2VIDEO] Triggering render job for: "${prompt}"`);
+      const response = await axios.post('https://api.json2video.com/v2/movies', {
+        width: 1024,
+        height: 1024,
+        fps: 30,
+        scenes: [
+          {
+            duration: 5,
+            elements: [
+              {
+                type: "video",
+                prompt: prompt,
+                model: "luma-ray"
+              }
+            ]
+          }
+        ]
+      }, {
+        headers: {
+          'x-api-key': json2videoKey,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const projectId = response.data.project;
+      if (!projectId) {
+        throw new Error("No project ID returned by json2video");
+      }
+
+      console.log(`[JSON2VIDEO] Render job created. Project ID: ${projectId}. Starting polling...`);
+
+      // Poll every 4 seconds for up to 15 times (1 minute timeout)
+      let videoUrl = "";
+      for (let i = 0; i < 15; i++) {
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        
+        const statusRes = await axios.get(`https://api.json2video.com/v2/movies?project=${projectId}`, {
+          headers: { 'x-api-key': json2videoKey }
+        });
+
+        const movie = statusRes.data.movie;
+        console.log(`[JSON2VIDEO] Polling status iteration ${i+1}: ${movie.status}`);
+        
+        if (movie.status === 'completed' && movie.url) {
+          videoUrl = movie.url;
+          break;
+        } else if (movie.status === 'failed') {
+          throw new Error("json2video render job failed");
+        }
+      }
+
+      if (videoUrl) {
+        return res.json({ url: videoUrl });
+      } else {
+        throw new Error("json2video render job timed out");
+      }
+    } else {
+      return res.status(400).json({ error: "json2video is only configured for video rendering." });
+    }
+  } catch (error) {
+    console.error('[JSON2VIDEO Generation Error]:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'json2video premium media generation failed.' });
+  }
+});
+
 // Memory store for OTPs
 const otpStore = new Map();
 

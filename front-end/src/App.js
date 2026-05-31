@@ -349,15 +349,36 @@ function App() {
                 type: 'image',
                 url: `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`
               });
+              emitAlert('MEDIA', "NEURAL IMAGE SECURED VIA POLLINATIONS! 🎨", false);
             } else if (r.type === "video") {
-              const encoded = encodeURIComponent(r.prompt);
-              // Using a placeholder video service or a specific one if available
-              // For now, using a stylized prompt that might work with video-enabled models or a visual placeholder
-              setGeneratedImage({
-                type: 'video',
-                url: `https://image.pollinations.ai/prompt/${encoded},animated,motion?width=1024&height=1024&nologo=true&seed=${Date.now()}&model=flux-pro`
-              });
-              emitAlert('MEDIA', "VISUALIZING... THIS IS GOING TO BE SO COOL! 🎨", false);
+              (async () => {
+                emitAlert('MEDIA', "RENDER REQUEST SUBMITTED TO JSON2VIDEO CORES... 🎥", false);
+                try {
+                  const res = await fetch(`${BACKEND_URL}/api/generate-media`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'video', prompt: r.prompt })
+                  });
+                  const mediaData = await res.json();
+                  if (mediaData.url) {
+                    setGeneratedImage({
+                      type: 'video',
+                      url: mediaData.url
+                    });
+                    emitAlert('SYS_RESTORED', 'PREMIUM SCENE RENDER COMPLETED! 🎬', false);
+                  } else {
+                    throw new Error("Invalid video URL returned");
+                  }
+                } catch (err) {
+                  console.error("JSON2Video render failed, reverting to backup animated canvas:", err);
+                  const encoded = encodeURIComponent(r.prompt);
+                  setGeneratedImage({
+                    type: 'video',
+                    url: `https://image.pollinations.ai/prompt/${encoded},animated,motion?width=1024&height=1024&nologo=true&seed=${Date.now()}&model=flux-pro`
+                  });
+                  emitAlert('SYS_ERROR', 'JSON2VIDEO EXHAUSTED: RETREATING TO ANIMATED FALLBACK CANVAS.', true);
+                }
+              })();
             }
           }
           if (r?.action === "update_ui") {
@@ -583,6 +604,25 @@ function App() {
           <Route path="/register" element={<Login mode="signup" />} />
           <Route path="/forgot-password" element={<Login mode="reset" />} />
         </Routes>
+
+        {generatedImage && (
+          <div className="image-modal" onClick={() => setGeneratedImage(null)}>
+            <div className="image-header">
+              <span className="image-status">{generatedImage.type === 'video' ? 'NEURAL_VIDEO_STREAM_ACTIVE' : 'NEURAL_VISUALIZATION_COMPLETE'}</span>
+              <button className="image-close-btn" onClick={() => setGeneratedImage(null)}>✕</button>
+            </div>
+            <div className="image-container" onClick={(e) => e.stopPropagation()}>
+              {generatedImage.type === 'video' && !generatedImage.url.includes('pollinations.ai') ? (
+                <video src={generatedImage.url} controls autoPlay loop className="media-video" />
+              ) : generatedImage.type === 'video' ? (
+                <img src={generatedImage.url} alt="Neural Video" className="media-video" />
+              ) : (
+                <img src={generatedImage.url} alt="Neural Output" />
+              )}
+            </div>
+            <p className="image-footer">CLICK ANYWHERE TO DISMISS</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -730,7 +770,9 @@ function App() {
             <button className="image-close-btn" onClick={() => setGeneratedImage(null)}>✕</button>
           </div>
           <div className="image-container" onClick={(e) => e.stopPropagation()}>
-            {generatedImage.type === 'video' ? (
+            {generatedImage.type === 'video' && !generatedImage.url.includes('pollinations.ai') ? (
+              <video src={generatedImage.url} controls autoPlay loop className="media-video" />
+            ) : generatedImage.type === 'video' ? (
               <img src={generatedImage.url} alt="Neural Video" className="media-video" />
             ) : (
               <img src={generatedImage.url} alt="Neural Output" />
