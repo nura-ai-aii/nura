@@ -40,7 +40,9 @@ export default function PremiumUI({
   const [inputValue, setInputValue] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [primedImageFile, setPrimedImageFile] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [manusTaskId, setManusTaskId] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [manusStatus, setManusStatus] = useState(null);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState(null);
   
