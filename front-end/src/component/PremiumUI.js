@@ -635,22 +635,123 @@ export default function PremiumUI({
             </div>
           </div>
         </div>
-{/* Mobile Footer for Mobile Devices */}
-<div className="mobile-footer">
-  <button className="mobile-gen-btn" onClick={handleGenerateShortVideo} title="Generate 15s Video (Mobile)">
-    🎥 15s Video
-  </button>
-  <button className="mobile-voice-btn" onClick={handleMicClick} title="Voice Input (Mobile)">
-    🎤
-  </button>
-  <div className="mobile-numbered-menu">
-    <button className="menu-item" onClick={() => handleCardClick('Create an image of ')}><span className="menu-number">1.</span> Image</button>
-    <button className="menu-item" onClick={() => handleCardClick('Generate a video with AI of ')}><span className="menu-number">2.</span> Video</button>
-    <button className="menu-item" onClick={handleAnimateImageClick}><span className="menu-number">3.</span> Animate</button>
-    <button className="menu-item" onClick={() => handleCardClick('Create a modern website layout for ')}><span className="menu-number">4.</span> Website</button>
-    <button className="menu-item" onClick={() => handleCardClick('Write or edit')}><span className="menu-number">5.</span> Write</button>
-  </div>
-</div>
+        {/* 3. MOBILE UI (Hidden on Desktop) */}
+        <div className="mobile-ui-wrapper">
+          {/* Mobile Top Bar */}
+          <header className="mobile-top-bar">
+            <div className="mobile-brand">
+              <div className="mobile-logo-box">
+                <img src="/new-logo-hexper.png" alt="Hexper" className="mobile-logo" />
+              </div>
+              <div className="mobile-brand-text">
+                <h2>Hexpar AI</h2>
+                <span>POWERED BY COGNITIVE</span>
+              </div>
+            </div>
+            <button className="mobile-menu-btn">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          </header>
+
+          {/* Mobile Main Content */}
+          <div className="mobile-main-content">
+            <div className="mobile-greeting">
+              <h1>How can I <br/><span className="cyan-text">assist you,</span> <span className="purple-text">Master?</span></h1>
+              <p className="mobile-subtitle">TAP TO SPEAK OR TYPE YOUR REQUEST</p>
+            </div>
+
+            <div className="mobile-input-bar">
+              <button className="mobile-mic-btn" onClick={handleMicClick}>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="22"></line>
+                </svg>
+              </button>
+              <input 
+                type="text" 
+                className="mobile-prompt-input" 
+                placeholder="Ask anything..." 
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <button className="mobile-send-btn" onClick={handleSend}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
+              </button>
+            </div>
+
+            <div className="mobile-action-grid">
+              <div className="mobile-action-card" onClick={() => handleCardClick("Create an image of ")}>
+                <div className="mobile-card-icon purple">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </div>
+                <div className="mobile-card-text">
+                  <h3>Create an image</h3>
+                  <p>Generate with AI</p>
+                </div>
+              </div>
+              <div className="mobile-action-card" onClick={() => handleCardClick("Help me write and enhance: ")}>
+                <div className="mobile-card-icon blue">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                </div>
+                <div className="mobile-card-text">
+                  <h3>Write or edit</h3>
+                  <p>Enhance your content</p>
+                </div>
+              </div>
+              <div className="mobile-action-card" onClick={() => handleCardClick("Look up real-time information about ")}>
+                <div className="mobile-card-icon cyan">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <div className="mobile-card-text">
+                  <h3>Look something up</h3>
+                  <p>Get real-time answers</p>
+                </div>
+              </div>
+              <div className="mobile-action-card" onClick={() => handleCardClick("Solve this code: ")}>
+                <div className="mobile-card-icon pink">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                </div>
+                <div className="mobile-card-text">
+                  <h3>Code assistant</h3>
+                  <p>Solve, debug, integrate</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          <nav className="mobile-bottom-nav">
+            <button className="mobile-nav-item active">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              <span>Home</span>
+            </button>
+            <button className="mobile-nav-item">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>History</span>
+            </button>
+            <div className="mobile-nav-blob" onClick={() => handleCardClick("Activate voice interface")}>
+              <div className="mobile-blob-glow"></div>
+              <div className="mobile-blob-core"></div>
+            </div>
+            <button className="mobile-nav-item">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <span>Favorites</span>
+            </button>
+            <button className="mobile-nav-item">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <span>Profile</span>
+            </button>
+          </nav>
+        </div>
       </main>
     </div>
   );
