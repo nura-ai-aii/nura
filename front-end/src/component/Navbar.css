@@ -314,6 +314,33 @@
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
+/* Sign Out Outlined Button */
+.btn-logout {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1.5px solid rgba(239, 68, 68, 0.5);
+  border-radius: 8px;
+  color: #f87171;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  height: 38px;
+  transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.35);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
 .btn-icon {
   width: 14px;
   height: 14px;
