@@ -21,7 +21,7 @@ import { BACKEND_URL } from './config';
 import BackgroundModeToggle from './component/BackgroundModeToggle';
 import ShareChat from './component/ShareChat';
 import PremiumUI from './component/PremiumUI';
-
+import MobileAppUI from './component/MobileAppUI';
 
 // Interaction States
 const STATE = {
@@ -563,6 +563,11 @@ function App() {
   const isSpeaking = interactionState === STATE.SPEAKING;
 
   const isShareRoute = location.pathname.startsWith('/share/');
+  const isMobileUIRoute = location.pathname === '/mobile';
+
+  if (isMobileUIRoute) {
+    return <MobileAppUI />;
+  }
 
   if (isShareRoute) {
     return (
