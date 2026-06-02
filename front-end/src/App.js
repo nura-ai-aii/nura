@@ -109,6 +109,13 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [isMobileViewport, setIsMobileViewport] = useState(window.innerWidth <= 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobileViewport(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Firebase auth state
   const [currentUser, setCurrentUser] = useState(null);
   const [uiMode, setUiMode] = useState(localStorage.getItem('nura_uiMode') || 'default');
@@ -565,8 +572,17 @@ function App() {
   const isShareRoute = location.pathname.startsWith('/share/');
   const isMobileUIRoute = location.pathname === '/mobile';
 
-  if (isMobileUIRoute) {
-    return <MobileAppUI />;
+  if (isMobileUIRoute || isMobileViewport) {
+    return <MobileAppUI 
+      transcript={transcript}
+      aiResponse={aiResponse}
+      chatHistory={chatHistory}
+      interactionState={interactionState}
+      onSendMessage={(msg, file) => {
+        setTranscript(msg);
+        callNeuralCore(msg, file);
+      }}
+    />;
   }
 
   if (isShareRoute) {
