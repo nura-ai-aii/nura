@@ -996,6 +996,44 @@ app.post('/api/verify-otp', (req, res) => {
   res.json({ success: true, message: 'Email verified successfully.' });
 });
 
+// ──────────────────────────────────────────────
+// PYTHON INTEGRATION ENDPOINT
+// ──────────────────────────────────────────────
+app.post('/api/python/execute', (req, res) => {
+  const { script, command, args = [] } = req.body;
+  
+  if (!script || !command) {
+    return res.status(400).json({ error: 'Script name and command are required.' });
+  }
+
+  // Construct absolute path to the python script
+  const scriptPath = path.join(__dirname, 'python_scripts', script);
+  
+  if (!fs.existsSync(scriptPath)) {
+    return res.status(404).json({ error: `Script ${script} not found in python_scripts folder.` });
+  }
+
+  // Sanitize arguments to prevent command injection
+  const safeArgs = args.map(arg => `"${String(arg).replace(/"/g, '\\"')}"`).join(' ');
+  const pythonCmd = `python "${scriptPath}" ${command} ${safeArgs}`;
+
+  exec(pythonCmd, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`[Python Execute Error] ${error.message}`);
+      return res.status(500).json({ error: error.message, stderr });
+    }
+    
+    try {
+      // Scripts are designed to output valid JSON string
+      const result = JSON.parse(stdout.trim());
+      res.json(result);
+    } catch (parseError) {
+      // If not valid JSON, just return raw output
+      res.json({ status: 'success', rawOutput: stdout.trim(), stderr });
+    }
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`[Hexpar AI Neural Core] Running on http://localhost:${PORT}`);
 });
