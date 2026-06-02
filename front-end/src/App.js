@@ -571,13 +571,18 @@ function App() {
 
   const isShareRoute = location.pathname.startsWith('/share/');
   const isMobileUIRoute = location.pathname === '/mobile';
+  
+  // Also only intercept if we are on main routes so we don't break login page
+  const isMainAppRoute = !location.pathname.startsWith('/log-in') && !location.pathname.startsWith('/sign-in') && !location.pathname.startsWith('/register');
 
-  if (isMobileUIRoute || isMobileViewport) {
+  if (isMobileUIRoute || (isMobileViewport && isMainAppRoute)) {
     return <MobileAppUI 
       transcript={transcript}
       aiResponse={aiResponse}
       chatHistory={chatHistory}
       interactionState={interactionState}
+      activePath={location.pathname}
+      onNavigate={(path) => navigate(path)}
       onSendMessage={(msg, file) => {
         setTranscript(msg);
         callNeuralCore(msg, file);
