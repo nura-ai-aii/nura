@@ -37,6 +37,7 @@ export default function PremiumUI({
   const [historySessions, setHistorySessions] = useState([]);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [primedImageFile, setPrimedImageFile] = useState(null);
@@ -49,6 +50,7 @@ export default function PremiumUI({
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const profileMenuRef = useRef(null);
+  const sidebarRef = useRef(null);
 
   const fetchHistory = async () => {
     if (currentUser) {
@@ -182,7 +184,7 @@ export default function PremiumUI({
   return (
     <div className="premium-ui-container">
       {/* 1. LEFT SIDEBAR */}
-      <aside className="premium-sidebar">
+      <aside className={`premium-sidebar ${mobileSidebarOpen ? 'mobile-open' : ''}`}>
         {/* Brand Logo Header */}
         <div className="sidebar-brand-header">
           <div className="sidebar-brand-left">
@@ -650,7 +652,7 @@ export default function PremiumUI({
                 <span>POWERED BY COGNITIVE</span>
               </div>
             </div>
-            <button className="mobile-menu-btn">
+            <button className="mobile-menu-btn" onClick={() => setMobileSidebarOpen(true)}>
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -658,6 +660,11 @@ export default function PremiumUI({
               </svg>
             </button>
           </header>
+
+          {/* Mobile Sidebar Overlay */}
+          {mobileSidebarOpen && (
+            <div className="mobile-sidebar-overlay" onClick={() => setMobileSidebarOpen(false)}></div>
+          )}
 
           {/* Mobile Main Content */}
           <div className="mobile-main-content">

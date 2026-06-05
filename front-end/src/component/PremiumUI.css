@@ -1103,11 +1103,44 @@
 
 @media (max-width: 768px) {
   /* Hide Desktop Elements completely */
-  .premium-sidebar,
   .premium-top-bar,
   .premium-viewport,
   .premium-input-box-wrapper {
     display: none !important;
+  }
+
+  .premium-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    max-width: 85vw;
+    z-index: 10001; /* Above mobile wrapper */
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+  }
+
+  .premium-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .mobile-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 10000; /* Below sidebar, above everything else */
+    animation: fadeInOverlay 0.3s ease;
+  }
+
+  @keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .premium-ui-container {
