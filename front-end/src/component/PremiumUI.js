@@ -645,11 +645,10 @@ export default function PremiumUI({
           <header className="mobile-top-bar">
             <div className="mobile-brand">
               <div className="mobile-logo-box">
-                <img src="/new-logo-hexper.png" alt="Hexper" className="mobile-logo" />
+                <img src="/new-logo-hexper.png" alt="Logo" className="mobile-logo" />
               </div>
               <div className="mobile-brand-text">
-                <h2>Hexpar AI</h2>
-                <span>POWERED BY COGNITIVE</span>
+                <span>It's present by Nur mandal</span>
               </div>
             </div>
             <button className="mobile-menu-btn" onClick={() => setMobileSidebarOpen(true)}>
