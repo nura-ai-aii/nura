@@ -127,7 +127,7 @@ export default function PaymentModal({ onClose }) {
             <div className="payment-details-layout">
               <div className="bank-details-panel">
                 <div className="bank-header">
-                  <div className="airtel-logo"></div>
+                  <img src="/images/airtel-logo.png" alt="Airtel Logo" className="airtel-logo-img" />
                   <div>
                     <p className="label">Bank Name</p>
                     <p className="value">Airtel Payments Bank</p>
