@@ -3,6 +3,7 @@ import './PremiumUI.css';
 import { getChatSessions, deleteChatSession } from '../historyService';
 import { signOutUser } from '../firebaseAuth';
 import { emitAlert } from './AlertSystem';
+import PaymentModal from './PaymentModal';
 
 export default function PremiumUI({
   currentUser,
@@ -38,6 +39,7 @@ export default function PremiumUI({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [primedImageFile, setPrimedImageFile] = useState(null);
@@ -218,6 +220,10 @@ export default function PremiumUI({
         <div className="sidebar-section">
           <span className="sidebar-section-title">AI TOOLS</span>
           <nav className="sidebar-nav-list">
+            <button className="sidebar-nav-item upgrade-btn" onClick={() => setShowPaymentModal(true)} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2))', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+              <span className="nav-item-icon" style={{ color: '#c084fc' }}>💎</span>
+              <span style={{ color: '#fff', fontWeight: 600 }}>Upgrade to Premium</span>
+            </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Create an image of ")}>
               <span className="nav-item-icon image">🎨</span>
               <span>AI Image Generator</span>
@@ -761,6 +767,9 @@ export default function PremiumUI({
           </nav>
         </div>
       </main>
+
+      {/* Payment & Subscription Wizard */}
+      {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
     </div>
   );
 }

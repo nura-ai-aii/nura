@@ -1034,6 +1034,37 @@ app.post('/api/python/execute', (req, res) => {
   });
 });
 
+// ──────────────────────────────────────────────
+// PAYMENT SCREENSHOT UPLOAD ENDPOINT
+// ──────────────────────────────────────────────
+const paymentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'uploads', 'payments');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.png';
+    const timestamp = Date.now();
+    cb(null, `payment_${timestamp}${ext}`);
+  }
+});
+const uploadPayment = multer({ storage: paymentStorage });
+
+app.post('/api/payment/upload', uploadPayment.single('screenshot'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No screenshot uploaded.' });
+  }
+  
+  const { plan, amount } = req.body;
+  console.log(`[PAYMENT] Received screenshot for plan: ${plan} (₹${amount})`);
+  console.log(`[PAYMENT] File saved to: ${req.file.path}`);
+  
+  res.json({ success: true, message: 'Screenshot uploaded and saved successfully.', file: req.file.filename });
+});
+
 app.listen(PORT, () => {
   console.log(`[Hexpar AI Neural Core] Running on http://localhost:${PORT}`);
 });
