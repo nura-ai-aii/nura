@@ -22,6 +22,7 @@ import BackgroundModeToggle from './component/BackgroundModeToggle';
 import ShareChat from './component/ShareChat';
 import PremiumUI from './component/PremiumUI';
 import MobileAppUI from './component/MobileAppUI';
+import LoadingSpinner from './component/LoadingSpinner';
 
 // Interaction States
 const STATE = {
@@ -32,74 +33,14 @@ const STATE = {
 };
 
 function StartupSequence({ onComplete }) {
-  const [logs, setLogs] = React.useState([]);
-  const [progress, setProgress] = React.useState(0);
-
-  const startupLogs = [
-    "COGNITIVE CORES ONLINE... OK",
-    "ARMING WAKE-WORD SENSORS... ACTIVE",
-    "CONNECTING NEURAL TELEMETRY LINK... SYNCED",
-    "INJECTING COMPANION EMOTION DRIVERS V2.4... COMPLETE",
-    "JARVIS SCI-FI HOLOGRAPHIC HUD... ACTIVE",
-    "WELCOME BACK, MASTER NUR MOHAMMAD MANDAL."
-  ];
-
   React.useEffect(() => {
-    // Add logs one by one with a sci-fi typing delay
-    startupLogs.forEach((log, index) => {
-      setTimeout(() => {
-        setLogs(prev => [...prev, log]);
-      }, index * 320);
-    });
-
-    // Progress bar animation
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, 40);
-
-    // Complete startup
-    const completeTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       onComplete();
     }, 2500);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
 
-    return () => {
-      clearInterval(interval);
-      clearTimeout(completeTimer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <div className="startup-overlay">
-      <div className="startup-container">
-        <div className="startup-header">
-          <span className="startup-dot-glow"></span>
-          HEXPAR COGNITIVE SYSTEM INITIALIZATION
-        </div>
-        <div className="startup-terminal-box">
-          {logs.map((log, i) => (
-            <div key={i} className={`startup-log-line ${i === startupLogs.length - 1 ? 'log-highlight' : ''}`}>
-              <span className="terminal-prompt">&gt;</span> {log}
-            </div>
-          ))}
-        </div>
-        <div className="startup-loader-wrap">
-          <div className="startup-progress-bar" style={{ width: `${progress}%` }}></div>
-          <div className="startup-loader-glow" style={{ left: `${progress}%` }}></div>
-        </div>
-        <div className="startup-footer">
-          <span>SECURE UPLINK ACTIVE</span>
-          <span>EST. COGNITIVE CALIBRATION: {Math.max(0, 100 - progress)}%</span>
-        </div>
-      </div>
-    </div>
-  );
+  return <LoadingSpinner fullScreen={true} />;
 }
 
 function App() {
@@ -244,7 +185,7 @@ function App() {
     } catch (e) {
       setApiHealth({ backend: 'error', groq: 'error', gemini: 'error', openrouter: 'error', github: 'error', tts: 'error' });
       setApiStatus('OFFLINE');
-      emitAlert('BACKEND_DOWN', 'OOF, NEURAL CORE DISCONNECTED: WE ARE OFFLINE 😭', true);
+      // Offline alert removed as per user preference (showing loading spinner instead)
     }
   }, []);
 
@@ -599,6 +540,10 @@ function App() {
         </Routes>
       </div>
     );
+  }
+
+  if (apiStatus === 'OFFLINE') {
+    return <LoadingSpinner fullScreen={true} message="Connecting to Server..." />;
   }
 
   if (uiMode === 'premium') {
