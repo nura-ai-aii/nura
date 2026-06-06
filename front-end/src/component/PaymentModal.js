@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import './PaymentModal.css';
-
+import qr300 from '../images/300-payment-qr.png';
+import qr600 from '../images/600-payment-qr.png';
+import qr1000 from '../images/1000-payment-qr.png';
+import airtelLogo from '../images/airtel-logo.png';
 export default function PaymentModal({ onClose }) {
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -8,9 +11,9 @@ export default function PaymentModal({ onClose }) {
   const [uploadedFile, setUploadedFile] = useState(null);
 
   const plans = [
-    { id: 'it', name: 'IT Plan', price: 300, interval: '/month', badge: '3 Days Trial', features: ['Basic AI Access', 'Standard Response', 'Community Support', 'Limited Usage'], qrImage: '/images/300-payment-qr.png' },
-    { id: 'pro', name: 'Pro Plan', price: 600, interval: '/month', badge: '1 Week Trial', features: ['All IT Plan Features', 'Faster Response', 'Priority Support', 'More AI Usage'], qrImage: '/images/600-payment-qr.png' },
-    { id: 'vip', name: 'VIP Plan', price: 1000, interval: '/month', badge: '1 Month Trial', features: ['All Pro Plan Features', 'Ultra Fast Response', 'VIP Support', 'Unlimited AI Usage'], qrImage: '/images/1000-payment-qr.png' }
+    { id: 'it', name: 'IT Plan', price: 300, interval: '/month', badge: '3 Days Trial', features: ['Basic AI Access', 'Standard Response', 'Community Support', 'Limited Usage'], qrImage: qr300 },
+    { id: 'pro', name: 'Pro Plan', price: 600, interval: '/month', badge: '1 Week Trial', features: ['All IT Plan Features', 'Faster Response', 'Priority Support', 'More AI Usage'], qrImage: qr600 },
+    { id: 'vip', name: 'VIP Plan', price: 1000, interval: '/month', badge: '1 Month Trial', features: ['All Pro Plan Features', 'Ultra Fast Response', 'VIP Support', 'Unlimited AI Usage'], qrImage: qr1000 }
   ];
 
   const handleSelectPlan = (plan) => {
@@ -127,7 +130,7 @@ export default function PaymentModal({ onClose }) {
             <div className="payment-details-layout">
               <div className="bank-details-panel">
                 <div className="bank-header">
-                  <img src="/images/airtel-logo.png" alt="Airtel Logo" className="airtel-logo-img" />
+                  <img src={airtelLogo} alt="Airtel Logo" className="airtel-logo-img" />
                   <div>
                     <p className="label">Bank Name</p>
                     <p className="value">Airtel Payments Bank</p>
