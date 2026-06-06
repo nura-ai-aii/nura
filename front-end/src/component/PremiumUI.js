@@ -54,7 +54,6 @@ export default function PremiumUI({
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const profileMenuRef = useRef(null);
-  const sidebarRef = useRef(null);
 
   const fetchHistory = async () => {
     if (currentUser) {
