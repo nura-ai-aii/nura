@@ -334,7 +334,8 @@ function App() {
           const r = res.result;
           if (r?.action === "generate_media") {
             if (r.type === "image") {
-              const encoded = encodeURIComponent(`${r.prompt}, JARVIS holographic style, neon, 4k`);
+              const safePrompt = (r.prompt || "futuristic AI core").substring(0, 800);
+              const encoded = encodeURIComponent(`${safePrompt}, JARVIS holographic style, neon, 4k`);
               setGeneratedImage({
                 type: 'image',
                 url: `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`
@@ -361,7 +362,8 @@ function App() {
                   }
                 } catch (err) {
                   console.error("JSON2Video render failed, reverting to backup animated canvas:", err);
-                  const encoded = encodeURIComponent(r.prompt);
+                  const safeVideoPrompt = (r.prompt || "futuristic AI animation").substring(0, 800);
+                  const encoded = encodeURIComponent(safeVideoPrompt);
                   setGeneratedImage({
                     type: 'video',
                     url: `https://image.pollinations.ai/prompt/${encoded},animated,motion?width=1024&height=1024&nologo=true&seed=${Date.now()}&model=flux-pro`
