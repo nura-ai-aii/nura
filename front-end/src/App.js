@@ -509,12 +509,14 @@ function App() {
 
   if (isMobileUIRoute || (isMobileViewport && isMainAppRoute)) {
     return <MobileAppUI 
+      currentUser={currentUser}
       transcript={transcript}
       aiResponse={aiResponse}
       chatHistory={chatHistory}
       interactionState={interactionState}
       activePath={location.pathname}
       onNavigate={(path) => navigate(path)}
+      onAnalyzeImage={callVisionCore}
       onSendMessage={(msg, file) => {
         setTranscript(msg);
         callNeuralCore(msg, file);

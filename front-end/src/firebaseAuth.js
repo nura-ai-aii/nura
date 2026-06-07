@@ -96,4 +96,27 @@ export const resetUserPassword = async (email) => {
   }
 };
 
+import { updateProfile } from "firebase/auth";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "./firebase";
+
+export const uploadAvatar = async (file, user) => {
+  if (!user || !file) throw new Error("Missing user or file.");
+  const storageRef = ref(storage, `avatars/${user.uid}/${file.name}`);
+  
+  try {
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    await updateProfile(user, {
+      photoURL: downloadURL
+    });
+    
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading avatar:", error);
+    throw error;
+  }
+};
+
 export { auth };

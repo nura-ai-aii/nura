@@ -14,9 +14,12 @@ const firebaseConfig = {
 };
 
 
+import { getStorage } from "firebase/storage";
+
 // Initialize Firebase app and analytics safely
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 let analytics = null;
 isSupported().then((supported) => {
@@ -29,4 +32,4 @@ isSupported().then((supported) => {
   }
 });
 
-export { app, analytics, db };
+export { app, analytics, db, storage };
