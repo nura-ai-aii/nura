@@ -104,13 +104,87 @@ const MobileAppUI = ({ currentUser, chatHistory, onSendMessage, interactionState
               <button onClick={() => setSidebarOpen(false)}>✕</button>
             </div>
             <div className="sidebar-nav">
-              <div onClick={() => { setSidebarOpen(false); if(onNavigate) onNavigate('/'); }}>Home</div>
-              <div onClick={() => { setSidebarOpen(false); if(onNavigate) onNavigate('/history'); }}>History</div>
-              <div onClick={() => { setSidebarOpen(false); if(onNavigate) onNavigate('/about'); }}>Profile</div>
+              <button 
+                className="sidebar-new-chat-btn" 
+                onClick={() => {
+                  setSidebarOpen(false);
+                  if (onNewChat) onNewChat();
+                }}
+              >
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                New Chat
+              </button>
+
+              <div className="sidebar-section">
+                <span className="sidebar-section-title">AI TOOLS</span>
+                <nav className="sidebar-nav-list">
+                  <button className="sidebar-nav-item upgrade-btn" onClick={() => setSidebarOpen(false)} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2))', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+                    <span className="nav-item-icon" style={{ color: '#c084fc' }}>💎</span>
+                    <span style={{ color: '#fff', fontWeight: 600 }}>Upgrade to Premium</span>
+                  </button>
+                  <button className="sidebar-nav-item" onClick={() => { setSidebarOpen(false); onSendMessage("Generate an image of "); }}>
+                    <span className="nav-item-icon image">🎨</span>
+                    <span>AI Image Generator</span>
+                  </button>
+                  <button className="sidebar-nav-item" onClick={() => { setSidebarOpen(false); onSendMessage("Generate a video with AI of "); }}>
+                    <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>🎥</span>
+                    <span>Generate Video with AI</span>
+                  </button>
+                  <button className="sidebar-nav-item" onClick={() => { setSidebarOpen(false); onSendMessage("Create a modern website layout for "); }}>
+                    <span className="nav-item-icon website">🌐</span>
+                    <span>Website Generator</span>
+                  </button>
+                  <button className="sidebar-nav-item" onClick={() => { setSidebarOpen(false); onSendMessage("Create a presentation draft about "); }}>
+                    <span className="nav-item-icon presentation">📊</span>
+                    <span>Presentation Maker</span>
+                  </button>
+                </nav>
+              </div>
+
+              <div className="sidebar-section chats-section">
+                <div className="chats-section-header">
+                  <span className="sidebar-section-title">CHATS</span>
+                </div>
+                <div className="sidebar-chats-list">
+                  {(!historySessions || historySessions.length === 0) ? (
+                    <div className="sidebar-empty-state">No active sessions.</div>
+                  ) : (
+                    historySessions.map((session) => (
+                      <div 
+                        key={session.sessionId}
+                        className={`sidebar-chat-row ${currentSessionId === session.sessionId ? 'active' : ''}`}
+                        onClick={() => {
+                          setSidebarOpen(false);
+                          if (onLoadSession) onLoadSession(session.sessionId, session.messages);
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="chat-bubble-icon">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span className="chat-title-text">{session.title || "Untitled Chat"}</span>
+                        
+                        <button 
+                          className="chat-item-delete-btn" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onDeleteSession) onDeleteSession(e, session.sessionId);
+                          }}
+                          title="Delete session"
+                        >
+                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
       {/* Share Modal Popup */}
       {generatedShareUrl && (

@@ -521,6 +521,11 @@ function App() {
         setTranscript(msg);
         callNeuralCore(msg, file);
       }}
+      historySessions={historySessions}
+      currentSessionId={currentSessionId}
+      onLoadSession={handleLoadSession}
+      onDeleteSession={handleDeleteSession}
+      onNewChat={handleNewChat}
     />;
   }
 
