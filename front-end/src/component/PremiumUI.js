@@ -738,7 +738,7 @@ export default function PremiumUI({
 
             {/* Action deck triggers */}
             <div className="premium-pill-actions">
-              {chatHistory.length > 0 && !transcript && !isProcessing && (
+              {chatHistory.length > 0 && !transcript && interactionState !== 'THINKING' && (
                 <button 
                   className="input-action-btn"
                   onClick={handleShareSession}
