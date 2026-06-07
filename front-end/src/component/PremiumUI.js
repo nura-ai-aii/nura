@@ -6,7 +6,7 @@ import { emitAlert } from './AlertSystem';
 import PaymentModal from './PaymentModal';
 import LoadingSpinner from './LoadingSpinner';
 import BrainNetwork from './BrainNetwork';
-
+import shareIcon from '../images/shere-.png';
 export default function PremiumUI({
   currentUser,
   chatHistory = [],
@@ -607,17 +607,12 @@ export default function PremiumUI({
               {/* Share Conversation Button at Bottom of Chat */}
               {chatHistory.length > 0 && !transcript && interactionState !== 'THINKING' && (
                 <div className="premium-chat-share-section" style={{ textAlign: 'center', marginTop: '30px', marginBottom: '20px' }}>
-                  {!generatedShareUrl ? (
-                    <button className="upgrade-pill-btn" onClick={handleShareSession} disabled={isSharingChat} style={{ margin: '0 auto', display: 'inline-flex' }}>
-                      <span className="diamond-glow">🔗</span>
-                      {isSharingChat ? 'ESTABLISHING UPLINK...' : 'SHARE THIS CONVERSATION'}
-                    </button>
-                  ) : (
-                    <div className="share-link-result" style={{ background: 'rgba(0, 245, 255, 0.1)', border: '1px solid #00F5FF', padding: '10px 15px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ color: '#00F5FF', fontFamily: 'monospace', fontSize: '0.85rem' }}>{generatedShareUrl}</span>
-                      <button onClick={handleCopyShareLink} style={{ background: '#00F5FF', color: '#000', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>COPY</button>
-                    </div>
-                  )}
+                  <img 
+                    src={shareIcon} 
+                    alt="Share Chat" 
+                    onClick={handleShareSession} 
+                    style={{ cursor: 'pointer', height: '50px', opacity: isSharingChat ? 0.5 : 1, transition: '0.3s' }} 
+                  />
                 </div>
               )}
 {generatedVideoUrl && (
@@ -907,6 +902,22 @@ export default function PremiumUI({
 
       {/* Neural Brain Diagnostics */}
       {showBrainNetwork && <BrainNetwork onClose={() => setShowBrainNetwork(false)} apiHealth={apiHealth} />}
+
+      {/* Share Link Popup */}
+      {generatedShareUrl && (
+        <div className="sci-fi-modal-overlay" onClick={() => setGeneratedShareUrl("")} style={{ zIndex: 1100 }}>
+          <div className="sci-fi-modal-content share-transmission-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', textAlign: 'center', background: 'rgba(5, 5, 10, 0.95)', border: '1px solid #00F5FF', borderRadius: '12px', padding: '24px', position: 'relative' }}>
+            <button className="modal-close" onClick={() => setGeneratedShareUrl("")} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            <h3 style={{ color: '#00F5FF', marginBottom: '20px', marginTop: '0' }}>SHARE TRANSMISSION</h3>
+            <div style={{ background: 'rgba(0, 245, 255, 0.1)', border: '1px solid #00F5FF', padding: '15px', borderRadius: '8px', wordBreak: 'break-all', marginBottom: '20px', fontFamily: 'monospace', color: '#00F5FF' }}>
+              {generatedShareUrl}
+            </div>
+            <button onClick={handleCopyShareLink} style={{ background: '#00F5FF', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '1rem', transition: '0.2s' }}>
+              COPY LINK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
