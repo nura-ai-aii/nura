@@ -604,17 +604,18 @@ export default function PremiumUI({
 
               <div ref={messagesEndRef} />
               
-              {/* Share Conversation Button at Bottom of Chat */}
-              {chatHistory.length > 0 && !transcript && interactionState !== 'THINKING' && (
-                <div className="premium-chat-share-section" style={{ textAlign: 'center', marginTop: '30px', marginBottom: '20px' }}>
-                  <img 
-                    src={shareIcon} 
-                    alt="Share Chat" 
-                    onClick={handleShareSession} 
-                    style={{ cursor: 'pointer', height: '50px', opacity: isSharingChat ? 0.5 : 1, transition: '0.3s' }} 
-                  />
-                </div>
-              )}
+          {/* Share Conversation Floating Button */}
+          {chatHistory.length > 0 && (
+            <div className="floating-share-btn-container" style={{ position: 'fixed', bottom: '120px', right: '40px', zIndex: 100 }}>
+              <img 
+                src={shareIcon} 
+                alt="Share Chat" 
+                onClick={handleShareSession} 
+                style={{ cursor: 'pointer', height: '55px', filter: 'drop-shadow(0 0 10px rgba(0,245,255,0.5))', opacity: isSharingChat ? 0.5 : 1, transition: '0.3s' }} 
+                title="Share this conversation"
+              />
+            </div>
+          )}
 {generatedVideoUrl && (
   <div className="generated-video-wrapper" style={{ marginTop: '1rem' }}>
     <video src={generatedVideoUrl} controls style={{ maxWidth: '100%', borderRadius: '8px' }} />

@@ -235,14 +235,15 @@ export default function Terminal({
 
           <div ref={messagesEndRef} />
           
-          {/* Share Conversation Image Button at Bottom of Chat */}
-          {chatHistory.length > 0 && !transcript && !isProcessing && (
-            <div className="premium-chat-share-section" style={{ textAlign: 'center', marginTop: '30px', marginBottom: '20px' }}>
+          {/* Share Conversation Floating Button */}
+          {chatHistory.length > 0 && (
+            <div className="floating-share-btn-container" style={{ position: 'fixed', bottom: '120px', right: '40px', zIndex: 100 }}>
               <img 
                 src={shareIcon} 
                 alt="Share Chat" 
                 onClick={handleShareSession} 
-                style={{ cursor: 'pointer', height: '50px', opacity: isSharingChat ? 0.5 : 1, transition: '0.3s' }} 
+                style={{ cursor: 'pointer', height: '55px', filter: 'drop-shadow(0 0 10px rgba(0,245,255,0.5))', opacity: isSharingChat ? 0.5 : 1, transition: '0.3s' }} 
+                title="Share this conversation"
               />
             </div>
           )}
