@@ -609,7 +609,34 @@ function App() {
           <Route path="/forgot-password" element={<Login mode="reset" />} />
         </Routes>
 
-
+        {/* Hidden PlasmaOrb to provide speech recognition logic for PremiumUI */}
+        <div style={{ display: 'none' }}>
+          {activeMood === 'hw' ? (
+            <HwPlasmaOrb
+              color={blobColor}
+              size={blobSize}
+              sensitivity={blobSensitivity}
+              setTranscript={setTranscript}
+              setIsListening={(val) => setInteractionState(val ? STATE.LISTENING : STATE.IDLE)}
+              speechLang={speechLang}
+              isSpeaking={isSpeaking}
+              interactionState={interactionState}
+              interactionCount={interactionCount}
+            />
+          ) : (
+            <PlasmaOrb
+              color={blobColor}
+              size={blobSize}
+              sensitivity={blobSensitivity}
+              setTranscript={setTranscript}
+              setIsListening={(val) => setInteractionState(val ? STATE.LISTENING : STATE.IDLE)}
+              speechLang={speechLang}
+              isSpeaking={isSpeaking}
+              interactionState={interactionState}
+              interactionCount={interactionCount}
+            />
+          )}
+        </div>
       </div>
     );
   }
