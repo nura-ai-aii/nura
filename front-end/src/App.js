@@ -273,15 +273,11 @@ function App() {
         const mediaData = await res.json();
         
         if (mediaData.url) {
-          setGeneratedImage({
-            type: 'video',
-            url: mediaData.url
-          });
           setAiResponse("LTX-2 19B video generation completed successfully!\n\nHere is your animated video with synchronized matching audio loop generated from your starting frame.");
           setChatHistory(prev => [
             ...prev,
             { role: "user", content: `[Generated LTX-2 video from image with prompt: "${userInput}"]` },
-            { role: "assistant", content: "Successfully generated video from your starting frame using LTX-2 19B Distilled!" }
+            { role: "assistant", content: "Successfully generated video from your starting frame using LTX-2 19B Distilled!", videoUrl: mediaData.url }
           ]);
           emitAlert('SYS_RESTORED', 'LTX-2 PREMIUM VIDEO GENERATION COMPLETED! 🎬', false);
           speakResponse("Starting frame animated successfully, Master.", speechLang);
@@ -336,10 +332,8 @@ function App() {
             if (r.type === "image") {
               const safePrompt = (r.prompt || "futuristic AI core").substring(0, 800);
               const encoded = encodeURIComponent(`${safePrompt}, JARVIS holographic style, neon, 4k`);
-              setGeneratedImage({
-                type: 'image',
-                url: `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`
-              });
+              const imgUrl = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+              setChatHistory(prev => [...prev, { role: "assistant", content: "Image rendering complete. Visual output secured.", imageUrl: imgUrl }]);
               emitAlert('MEDIA', "NEURAL IMAGE SECURED VIA POLLINATIONS! 🎨", false);
             } else if (r.type === "video") {
               (async () => {
@@ -352,10 +346,7 @@ function App() {
                   });
                   const mediaData = await res.json();
                   if (mediaData.url) {
-                    setGeneratedImage({
-                      type: 'video',
-                      url: mediaData.url
-                    });
+                    setChatHistory(prev => [...prev, { role: "assistant", content: "Premium video rendering complete.", videoUrl: mediaData.url }]);
                     emitAlert('SYS_RESTORED', 'PREMIUM SCENE RENDER COMPLETED! 🎬', false);
                   } else {
                     throw new Error("Invalid video URL returned");
@@ -364,10 +355,8 @@ function App() {
                   console.error("JSON2Video render failed, reverting to backup animated canvas:", err);
                   const safeVideoPrompt = (r.prompt || "futuristic AI animation").substring(0, 800);
                   const encoded = encodeURIComponent(safeVideoPrompt);
-                  setGeneratedImage({
-                    type: 'video',
-                    url: `https://image.pollinations.ai/prompt/${encoded},animated,motion?width=1024&height=1024&nologo=true&seed=${Date.now()}&model=flux-pro`
-                  });
+                  const vidUrl = `https://image.pollinations.ai/prompt/${encoded},animated,motion?width=1024&height=1024&nologo=true&seed=${Date.now()}&model=flux-pro`;
+                  setChatHistory(prev => [...prev, { role: "assistant", content: "Fallback animated video rendering complete.", videoUrl: vidUrl }]);
                   emitAlert('SYS_ERROR', 'JSON2VIDEO EXHAUSTED: RETREATING TO ANIMATED FALLBACK CANVAS.', true);
                 }
               })();
@@ -620,24 +609,7 @@ function App() {
           <Route path="/forgot-password" element={<Login mode="reset" />} />
         </Routes>
 
-        {generatedImage && (
-          <div className="image-modal" onClick={() => setGeneratedImage(null)}>
-            <div className="image-header">
-              <span className="image-status">{generatedImage.type === 'video' ? 'NEURAL_VIDEO_STREAM_ACTIVE' : 'NEURAL_VISUALIZATION_COMPLETE'}</span>
-              <button className="image-close-btn" onClick={() => setGeneratedImage(null)}>✕</button>
-            </div>
-            <div className="image-container" onClick={(e) => e.stopPropagation()}>
-              {generatedImage.type === 'video' && !generatedImage.url.includes('pollinations.ai') ? (
-                <video src={generatedImage.url} controls autoPlay loop className="media-video" />
-              ) : generatedImage.type === 'video' ? (
-                <img src={generatedImage.url} alt="Neural Video" className="media-video" />
-              ) : (
-                <img src={generatedImage.url} alt="Neural Output" />
-              )}
-            </div>
-            <p className="image-footer">CLICK ANYWHERE TO DISMISS</p>
-          </div>
-        )}
+
       </div>
     );
   }
@@ -778,24 +750,7 @@ function App() {
         </DraggableComponent>
       )}
 
-      {generatedImage && (
-        <div className="image-modal" onClick={() => setGeneratedImage(null)}>
-          <div className="image-header">
-            <span className="image-status">{generatedImage.type === 'video' ? 'NEURAL_VIDEO_STREAM_ACTIVE' : 'NEURAL_VISUALIZATION_COMPLETE'}</span>
-            <button className="image-close-btn" onClick={() => setGeneratedImage(null)}>✕</button>
-          </div>
-          <div className="image-container" onClick={(e) => e.stopPropagation()}>
-            {generatedImage.type === 'video' && !generatedImage.url.includes('pollinations.ai') ? (
-              <video src={generatedImage.url} controls autoPlay loop className="media-video" />
-            ) : generatedImage.type === 'video' ? (
-              <img src={generatedImage.url} alt="Neural Video" className="media-video" />
-            ) : (
-              <img src={generatedImage.url} alt="Neural Output" />
-            )}
-          </div>
-          <p className="image-footer">CLICK ANYWHERE TO DISMISS</p>
-        </div>
-      )}
+
       {showWelcomeVideo && (
         <div className="welcome-video-overlay">
           <div className="welcome-video-container">

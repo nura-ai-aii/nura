@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './PremiumUI.css';
-import { getChatSessions, deleteChatSession } from '../historyService';
+import { getChatSessions, deleteChatSession, createSharedChat } from '../historyService';
 import { signOutUser } from '../firebaseAuth';
 import { emitAlert } from './AlertSystem';
 import PaymentModal from './PaymentModal';
@@ -52,6 +52,83 @@ export default function PremiumUI({
   // eslint-disable-next-line no-unused-vars
   const [manusStatus, setManusStatus] = useState(null);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState(null);
+
+  // New Image Chat UI and Share State
+  const [activeImageMenu, setActiveImageMenu] = useState(null);
+  const [isSharingChat, setIsSharingChat] = useState(false);
+  const [generatedShareUrl, setGeneratedShareUrl] = useState("");
+
+  const handleCopyShareLink = () => {
+    if (generatedShareUrl) {
+      navigator.clipboard.writeText(generatedShareUrl)
+        .then(() => emitAlert('SYS_RESTORED', 'TRANSMISSION SECURED: LINK COPIED! 🔗', false))
+        .catch(() => emitAlert('SYS_ERROR', 'UPLINK FAILURE: FAILED TO COPY LINK.', true));
+    }
+  };
+
+  const handleShareSession = async () => {
+    if (!currentUser) return;
+    setIsSharingChat(true);
+    setGeneratedShareUrl("");
+    try {
+      const chatId = await createSharedChat(currentUser.uid, `Session ${new Date().toLocaleDateString()}`, chatHistory);
+      if (chatId) {
+        const url = `${window.location.origin}/share/${chatId}`;
+        setGeneratedShareUrl(url);
+      } else {
+        emitAlert('SYS_ERROR', 'UPLINK FAILURE: COULD NOT ESTABLISH SHARE LINK.', true);
+      }
+    } catch (err) {
+      console.error("Error creating shared chat:", err);
+      emitAlert('SYS_ERROR', 'UPLINK FAILURE: COULD NOT ESTABLISH SHARE LINK.', true);
+    } finally {
+      setIsSharingChat(false);
+    }
+  };
+
+  const handleImageDownload = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `neural_output_${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleImageCopy = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      emitAlert('SYS_RESTORED', 'VISUAL COPIED TO CLIPBOARD.', false);
+    } catch (error) {
+      emitAlert('SYS_ERROR', 'FAILED TO COPY VISUAL DIRECTLY.', true);
+    }
+  };
+
+  const handleImageShare = async (url) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Neural Image Output',
+          text: 'Check out this AI generated image from Hexper AI.',
+          url: url
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      handleImageCopy(url);
+    }
+  };
   
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -459,6 +536,27 @@ export default function PremiumUI({
                     </div>
                     <div className="premium-bubble-text">
                       {msg.content}
+                      {msg.imageUrl && (
+                        <div className="chat-image-wrapper" onClick={() => setActiveImageMenu(activeImageMenu === index ? null : index)} style={{ position: 'relative', marginTop: '10px' }}>
+                          <img src={msg.imageUrl} alt="Neural Output" className="chat-inline-image" style={{ maxWidth: '100%', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(0, 245, 255, 0.2)' }} />
+                          {activeImageMenu === index && (
+                            <div className="image-options-popover" style={{
+                              position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(5, 5, 10, 0.85)',
+                              backdropFilter: 'blur(10px)', border: '1px solid #00F5FF', borderRadius: '8px', padding: '5px',
+                              display: 'flex', gap: '8px', zIndex: 10
+                            }}>
+                              <button onClick={(e) => { e.stopPropagation(); handleImageDownload(msg.imageUrl); setActiveImageMenu(null); }} style={{ background: 'transparent', color: '#00F5FF', border: 'none', cursor: 'pointer', fontSize: '12px' }}>⬇️ Download</button>
+                              <button onClick={(e) => { e.stopPropagation(); handleImageCopy(msg.imageUrl); setActiveImageMenu(null); }} style={{ background: 'transparent', color: '#00F5FF', border: 'none', cursor: 'pointer', fontSize: '12px' }}>📋 Copy</button>
+                              <button onClick={(e) => { e.stopPropagation(); handleImageShare(msg.imageUrl); setActiveImageMenu(null); }} style={{ background: 'transparent', color: '#00F5FF', border: 'none', cursor: 'pointer', fontSize: '12px' }}>🔗 Share</button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {msg.videoUrl && (
+                        <div className="chat-video-wrapper" style={{ marginTop: '10px' }}>
+                          <video src={msg.videoUrl} controls autoPlay loop className="chat-inline-video" style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.2)' }} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -505,6 +603,23 @@ export default function PremiumUI({
               )}
 
               <div ref={messagesEndRef} />
+              
+              {/* Share Conversation Button at Bottom of Chat */}
+              {chatHistory.length > 0 && !transcript && interactionState !== 'THINKING' && (
+                <div className="premium-chat-share-section" style={{ textAlign: 'center', marginTop: '30px', marginBottom: '20px' }}>
+                  {!generatedShareUrl ? (
+                    <button className="upgrade-pill-btn" onClick={handleShareSession} disabled={isSharingChat} style={{ margin: '0 auto', display: 'inline-flex' }}>
+                      <span className="diamond-glow">🔗</span>
+                      {isSharingChat ? 'ESTABLISHING UPLINK...' : 'SHARE THIS CONVERSATION'}
+                    </button>
+                  ) : (
+                    <div className="share-link-result" style={{ background: 'rgba(0, 245, 255, 0.1)', border: '1px solid #00F5FF', padding: '10px 15px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ color: '#00F5FF', fontFamily: 'monospace', fontSize: '0.85rem' }}>{generatedShareUrl}</span>
+                      <button onClick={handleCopyShareLink} style={{ background: '#00F5FF', color: '#000', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>COPY</button>
+                    </div>
+                  )}
+                </div>
+              )}
 {generatedVideoUrl && (
   <div className="generated-video-wrapper" style={{ marginTop: '1rem' }}>
     <video src={generatedVideoUrl} controls style={{ maxWidth: '100%', borderRadius: '8px' }} />
