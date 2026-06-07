@@ -332,7 +332,7 @@ function App() {
             if (r.type === "image") {
               const safePrompt = (r.prompt || "futuristic AI core").substring(0, 800);
               const encoded = encodeURIComponent(`${safePrompt}, JARVIS holographic style, neon, 4k`);
-              const imgUrl = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`;
+              const imgUrl = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${Date.now()}`;
               setChatHistory(prev => [...prev, { role: "assistant", content: "Image rendering complete. Visual output secured.", imageUrl: imgUrl }]);
               emitAlert('MEDIA', "NEURAL IMAGE SECURED VIA POLLINATIONS! 🎨", false);
             } else if (r.type === "video") {
@@ -355,7 +355,7 @@ function App() {
                   console.error("JSON2Video render failed, reverting to backup animated canvas:", err);
                   const safeVideoPrompt = (r.prompt || "futuristic AI animation").substring(0, 800);
                   const encoded = encodeURIComponent(safeVideoPrompt);
-                  const vidUrl = `https://pollinations.ai/p/${encoded},animated,motion?width=1024&height=1024&nologo=true&seed=${Date.now()}&model=flux-pro`;
+                  const vidUrl = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${Date.now()}&model=flux-pro`;
                   setChatHistory(prev => [...prev, { role: "assistant", content: "Fallback animated video rendering complete.", videoUrl: vidUrl }]);
                   emitAlert('SYS_ERROR', 'JSON2VIDEO EXHAUSTED: RETREATING TO ANIMATED FALLBACK CANVAS.', true);
                 }

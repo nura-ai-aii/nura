@@ -234,19 +234,6 @@ export default function Terminal({
           )}
 
           <div ref={messagesEndRef} />
-          
-          {/* Share Conversation Floating Button */}
-          {chatHistory.length > 0 && (
-            <div className="floating-share-btn-container" style={{ position: 'fixed', bottom: '120px', right: '40px', zIndex: 100 }}>
-              <img 
-                src={shareIcon} 
-                alt="Share Chat" 
-                onClick={handleShareSession} 
-                style={{ cursor: 'pointer', height: '55px', filter: 'drop-shadow(0 0 10px rgba(0,245,255,0.5))', opacity: isSharingChat ? 0.5 : 1, transition: '0.3s' }} 
-                title="Share this conversation"
-              />
-            </div>
-          )}
         </div>
       ) : (
         /* 2. Welcome Title Banner (Visible when empty) */
@@ -297,6 +284,18 @@ export default function Terminal({
 
         {/* Right buttons: Mic & Speech soundwave toggle */}
         <div className="pill-right-actions">
+          {chatHistory.length > 0 && !transcript && !isProcessing && (
+            <button 
+              type="button"
+              className="pill-action-btn"
+              onClick={handleShareSession}
+              title="Share this conversation"
+              style={{ opacity: isSharingChat ? 0.5 : 1, padding: '0 8px', border: 'none', background: 'transparent' }}
+            >
+              <img src={shareIcon} alt="Share" style={{ height: '26px', filter: 'drop-shadow(0 0 5px rgba(0,245,255,0.5))' }} />
+            </button>
+          )}
+
           <button 
             type="button" 
             className={`pill-mic-btn ${isListening ? 'active' : ''}`} 
