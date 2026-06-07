@@ -5,6 +5,7 @@ import { signOutUser } from '../firebaseAuth';
 import { emitAlert } from './AlertSystem';
 import PaymentModal from './PaymentModal';
 import LoadingSpinner from './LoadingSpinner';
+import BrainNetwork from './BrainNetwork';
 
 export default function PremiumUI({
   currentUser,
@@ -41,6 +42,7 @@ export default function PremiumUI({
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showBrainNetwork, setShowBrainNetwork] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
@@ -236,6 +238,10 @@ export default function PremiumUI({
             <button className="sidebar-nav-item upgrade-btn" onClick={handleUpgradeClick} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2))', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
               <span className="nav-item-icon" style={{ color: '#c084fc' }}>💎</span>
               <span style={{ color: '#fff', fontWeight: 600 }}>Upgrade to Premium</span>
+            </button>
+            <button className="sidebar-nav-item" onClick={() => setShowBrainNetwork(true)}>
+              <span className="nav-item-icon" style={{ color: '#10b981' }}>🧠</span>
+              <span>Neural Brain Diagnostics</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Create an image of ")}>
               <span className="nav-item-icon image">🎨</span>
@@ -783,6 +789,9 @@ export default function PremiumUI({
 
       {/* Payment & Subscription Wizard */}
       {showPaymentModal && <PaymentModal onClose={() => setShowPaymentModal(false)} />}
+
+      {/* Neural Brain Diagnostics */}
+      {showBrainNetwork && <BrainNetwork onClose={() => setShowBrainNetwork(false)} apiHealth={apiHealth} />}
     </div>
   );
 }
