@@ -746,6 +746,7 @@ function App() {
           }}
           onAnalyzeImage={callVisionCore}
           chatHistory={chatHistory}
+          currentUser={currentUser}
         />
       )}
 

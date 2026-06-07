@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './Terminal.css';
-
+import { createSharedChat } from '../historyService';
+import { emitAlert } from './AlertSystem';
+import shareIcon from '../images/shere-.png';
 export default function Terminal({ 
   transcript, 
   aiResponse, 
@@ -10,13 +12,91 @@ export default function Terminal({
   activeMood, 
   onSendMessage, 
   onAnalyzeImage,
-  chatHistory = []
+  chatHistory = [],
+  currentUser
 }) {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
   const [inputValue, setInputValue] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Media and Share States
+  const [activeImageMenu, setActiveImageMenu] = useState(null);
+  const [isSharingChat, setIsSharingChat] = useState(false);
+  const [generatedShareUrl, setGeneratedShareUrl] = useState("");
+
+  const handleCopyShareLink = () => {
+    if (generatedShareUrl) {
+      navigator.clipboard.writeText(generatedShareUrl)
+        .then(() => emitAlert('SYS_RESTORED', 'TRANSMISSION SECURED: LINK COPIED! 🔗', false))
+        .catch(() => emitAlert('SYS_ERROR', 'UPLINK FAILURE: FAILED TO COPY LINK.', true));
+    }
+  };
+
+  const handleShareSession = async () => {
+    if (!currentUser) return;
+    setIsSharingChat(true);
+    setGeneratedShareUrl("");
+    try {
+      const chatId = await createSharedChat(currentUser.uid, `Session ${new Date().toLocaleDateString()}`, chatHistory);
+      if (chatId) {
+        const url = `${window.location.origin}/share/${chatId}`;
+        setGeneratedShareUrl(url);
+      } else {
+        emitAlert('SYS_ERROR', 'UPLINK FAILURE: COULD NOT ESTABLISH SHARE LINK.', true);
+      }
+    } catch (err) {
+      console.error("Error creating shared chat:", err);
+      emitAlert('SYS_ERROR', 'UPLINK FAILURE: COULD NOT ESTABLISH SHARE LINK.', true);
+    } finally {
+      setIsSharingChat(false);
+    }
+  };
+
+  const handleImageDownload = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `neural_output_${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      window.open(url, '_blank');
+    }
+  };
+
+  const handleImageCopy = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      emitAlert('SYS_RESTORED', 'VISUAL COPIED TO CLIPBOARD.', false);
+    } catch (error) {
+      emitAlert('SYS_ERROR', 'FAILED TO COPY VISUAL DIRECTLY.', true);
+    }
+  };
+
+  const handleImageShare = async (url) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Neural Image Output',
+          text: 'Check out this AI generated image from Hexper AI.',
+          url: url
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      handleImageCopy(url);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -95,6 +175,27 @@ export default function Terminal({
                 </div>
                 <div className="bubble-content">
                   {msg.content}
+                  {msg.imageUrl && (
+                    <div className="chat-image-wrapper" onClick={() => setActiveImageMenu(activeImageMenu === index ? null : index)} style={{ position: 'relative', marginTop: '10px' }}>
+                      <img src={msg.imageUrl} alt="Neural Output" style={{ maxWidth: '100%', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(0, 245, 255, 0.2)' }} />
+                      {activeImageMenu === index && (
+                        <div className="image-options-popover" style={{
+                          position: 'absolute', bottom: '10px', right: '10px', background: 'rgba(5, 5, 10, 0.85)',
+                          backdropFilter: 'blur(10px)', border: '1px solid #00F5FF', borderRadius: '8px', padding: '5px',
+                          display: 'flex', gap: '8px', zIndex: 10
+                        }}>
+                          <button onClick={(e) => { e.stopPropagation(); handleImageDownload(msg.imageUrl); setActiveImageMenu(null); }} style={{ background: 'transparent', color: '#00F5FF', border: 'none', cursor: 'pointer', fontSize: '12px' }}>⬇️ Download</button>
+                          <button onClick={(e) => { e.stopPropagation(); handleImageCopy(msg.imageUrl); setActiveImageMenu(null); }} style={{ background: 'transparent', color: '#00F5FF', border: 'none', cursor: 'pointer', fontSize: '12px' }}>📋 Copy</button>
+                          <button onClick={(e) => { e.stopPropagation(); handleImageShare(msg.imageUrl); setActiveImageMenu(null); }} style={{ background: 'transparent', color: '#00F5FF', border: 'none', cursor: 'pointer', fontSize: '12px' }}>🔗 Share</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {msg.videoUrl && (
+                    <div className="chat-video-wrapper" style={{ marginTop: '10px' }}>
+                      <video src={msg.videoUrl} controls autoPlay loop style={{ maxWidth: '100%', borderRadius: '8px', border: '1px solid rgba(168, 85, 247, 0.2)' }} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -133,6 +234,18 @@ export default function Terminal({
           )}
 
           <div ref={messagesEndRef} />
+          
+          {/* Share Conversation Image Button at Bottom of Chat */}
+          {chatHistory.length > 0 && !transcript && !isProcessing && (
+            <div className="premium-chat-share-section" style={{ textAlign: 'center', marginTop: '30px', marginBottom: '20px' }}>
+              <img 
+                src={shareIcon} 
+                alt="Share Chat" 
+                onClick={handleShareSession} 
+                style={{ cursor: 'pointer', height: '50px', opacity: isSharingChat ? 0.5 : 1, transition: '0.3s' }} 
+              />
+            </div>
+          )}
         </div>
       ) : (
         /* 2. Welcome Title Banner (Visible when empty) */
@@ -256,6 +369,21 @@ export default function Terminal({
               <h4>Look something up</h4>
               <p>Get real-time answers</p>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Share Link Popup */}
+      {generatedShareUrl && (
+        <div className="sci-fi-modal-overlay" onClick={() => setGeneratedShareUrl("")} style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="sci-fi-modal-content share-transmission-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px', width: '90%', textAlign: 'center', background: 'rgba(5, 5, 10, 0.95)', border: '1px solid #00F5FF', borderRadius: '12px', padding: '24px', position: 'relative' }}>
+            <button className="modal-close" onClick={() => setGeneratedShareUrl("")} style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✕</button>
+            <h3 style={{ color: '#00F5FF', marginBottom: '20px', marginTop: '0' }}>SHARE TRANSMISSION</h3>
+            <div style={{ background: 'rgba(0, 245, 255, 0.1)', border: '1px solid #00F5FF', padding: '15px', borderRadius: '8px', wordBreak: 'break-all', marginBottom: '20px', fontFamily: 'monospace', color: '#00F5FF' }}>
+              {generatedShareUrl}
+            </div>
+            <button onClick={handleCopyShareLink} style={{ background: '#00F5FF', color: '#000', border: 'none', padding: '10px 20px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', width: '100%', fontSize: '1rem', transition: '0.2s' }}>
+              COPY LINK
+            </button>
           </div>
         </div>
       )}
