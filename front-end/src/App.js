@@ -23,7 +23,9 @@ import ShareChat from './component/ShareChat';
 import PremiumUI from './component/PremiumUI';
 import MobileAppUI from './component/MobileAppUI';
 import LoadingSpinner from './component/LoadingSpinner';
-
+import LandingPage from './component/LandingPage';
+import PrivacyPolicy from './component/PrivacyPolicy';
+import TermsOfService from './component/TermsOfService';
 // Interaction States
 const STATE = {
   IDLE: 'IDLE',
@@ -97,7 +99,9 @@ function App() {
   useEffect(() => {
     const isShareRoute = location.pathname.startsWith('/share/');
     const authRoutes = ['/log-in', '/sign-in', '/sing-in', '/register', '/forgot-password'];
-    if (!currentUser && !authRoutes.includes(location.pathname) && !isShareRoute) {
+    const publicRoutes = ['/', '/privacy', '/terms'];
+    
+    if (!currentUser && !authRoutes.includes(location.pathname) && !publicRoutes.includes(location.pathname) && !isShareRoute) {
       navigate('/log-in');
       return;
     }
@@ -504,6 +508,17 @@ function App() {
   const isShareRoute = location.pathname.startsWith('/share/');
   const isMobileUIRoute = location.pathname === '/mobile';
   
+  // Public routes for unauthenticated users
+  if (!currentUser && (location.pathname === '/' || location.pathname === '/privacy' || location.pathname === '/terms')) {
+    return (
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+      </Routes>
+    );
+  }
+
   // Also only intercept if we are on main routes so we don't break login page
   const isMainAppRoute = !location.pathname.startsWith('/log-in') && !location.pathname.startsWith('/sign-in') && !location.pathname.startsWith('/register');
 
