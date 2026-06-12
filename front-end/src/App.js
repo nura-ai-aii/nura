@@ -26,6 +26,9 @@ import LoadingSpinner from './component/LoadingSpinner';
 import LandingPage from './component/LandingPage';
 import PrivacyPolicy from './component/PrivacyPolicy';
 import TermsOfService from './component/TermsOfService';
+import OnboardingSurvey from './component/OnboardingSurvey';
+import { db } from './firebase';
+import { doc, getDoc } from 'firebase/firestore';
 // Interaction States
 const STATE = {
   IDLE: 'IDLE',
@@ -61,6 +64,8 @@ function App() {
 
   // Firebase auth state
   const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [isCheckingSurvey, setIsCheckingSurvey] = useState(true);
   const [uiMode, setUiMode] = useState(localStorage.getItem('nura_uiMode') || 'default');
 
   // UI Panel states
@@ -90,8 +95,26 @@ function App() {
   }, [showWelcomeVideo]);
 
   useEffect(() => {
-    const unsubscribe = observeAuthState((user) => {
+    const unsubscribe = observeAuthState(async (user) => {
       setCurrentUser(user);
+      if (user) {
+        setIsCheckingSurvey(true);
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists() && docSnap.data().surveyCompleted) {
+            setUserProfile(docSnap.data());
+          } else {
+            setUserProfile(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+        setIsCheckingSurvey(false);
+      } else {
+        setUserProfile(null);
+        setIsCheckingSurvey(false);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -228,18 +251,21 @@ function App() {
     if (nextVal) {
       emitAlert('SYS_WAKEWORD', "MOOD CHANGING ACTIVE: MINIMAL HUD ENGAGED! 🎭", false);
       speakResponse("Mood changing mode engaged. Master, I will be listening in the background.", speechLang);
-      setInteractionState(STATE.LISTENING);
-    } else {
-      emitAlert('SYS_CONSOLE', 'FULL HUD RESTORED. SYMMETRY IS BACK, MASTER! ✨', false);
-      speakResponse("Console restored, Master.", speechLang);
+     } else {
+      const nick = userProfile?.nickname || "Master";
+      setUiMode('default');
+      setBackgroundWakeWordMode(false);
+      emitAlert('SYS_CONSOLE', `FULL HUD RESTORED. SYMMETRY IS BACK, ${nick.toUpperCase()}! ✨`, false);
+      speakResponse(`Console restored, ${nick}.`, speechLang);
     }
   };
 
   // Automatic Tea Break Logic
   useEffect(() => {
     const teaInterval = setInterval(() => {
-      emitAlert('HEALTH', "TEA BREAK TIME MASTER! GET SOME CHAI, NOW! ☕", false);
-      speakResponse("Master, you have been working for an hour. I suggest a tea break to keep your brilliant mind sharp.", speechLang);
+      const nick = userProfile?.nickname || "Master";
+      emitAlert('HEALTH', `TEA BREAK TIME ${nick.toUpperCase()}! GET SOME CHAI, NOW! ☕`, false);
+      speakResponse(`${nick}, you have been working for an hour. I suggest a tea break to keep your brilliant mind sharp.`, speechLang);
     }, 3600000); // Every 60 minutes
     return () => clearInterval(teaInterval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -284,7 +310,8 @@ function App() {
             { role: "assistant", content: "Successfully generated video from your starting frame using LTX-2 19B Distilled!", videoUrl: mediaData.url }
           ]);
           emitAlert('SYS_RESTORED', 'LTX-2 PREMIUM VIDEO GENERATION COMPLETED! 🎬', false);
-          speakResponse("Starting frame animated successfully, Master.", speechLang);
+          const nick = userProfile?.nickname || "Master";
+          speakResponse(`Starting frame animated successfully, ${nick}.`, speechLang);
         } else {
           throw new Error("Invalid video URL returned");
         }
@@ -303,7 +330,7 @@ function App() {
       const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages, language: speechLang, model: selectedModel })
+        body: JSON.stringify({ messages: newMessages, language: speechLang, model: selectedModel, userProfile: userProfile || {} })
       });
 
       const data = await response.json();
@@ -374,8 +401,9 @@ function App() {
           if (r?.action === "set_reminder") {
             const delay = r.minutes * 60000;
             setTimeout(() => {
-              emitAlert('REMINDER', `MASTER! ${r.message.toUpperCase()} — DON'T FORGET! 😭`, true);
-              speakResponse(`Master, reminder: ${r.message}`, speechLang);
+              const nick = userProfile?.nickname || "Master";
+              emitAlert('REMINDER', `${nick.toUpperCase()}! ${r.message.toUpperCase()} — DON'T FORGET! 😭`, true);
+              speakResponse(`${nick}, reminder: ${r.message}`, speechLang);
             }, delay);
             emitAlert('SYS', `REMINDER SECURED: I WON'T LET YOU FORGET THIS! 😭`, false);
           }
@@ -406,6 +434,7 @@ function App() {
     const formData = new FormData();
     formData.append('image', imageFile);
     formData.append('prompt', "You are Hexpar AI. Analyze this image carefully. If it's a math or science problem, provide a clear, step-by-step classic educational explanation. If it contains handwriting, digitize it perfectly. If it is a diagram or formula, explain it and ask Master Nur Mohammad Mandal how you can assist further with this visual content like a premium Google Lens companion.");
+    formData.append('userProfile', JSON.stringify(userProfile || {}));
 
     try {
       emitAlert('SYS_VISION', "IMAGE COMMITTED TO COGNITIVE CORE! 📸", false);
@@ -517,6 +546,13 @@ function App() {
         <Route path="/terms" element={<TermsOfService />} />
       </Routes>
     );
+  }
+
+  // Check Survey
+  if (currentUser && !isCheckingSurvey && !isShareRoute) {
+    if (!userProfile?.surveyCompleted) {
+      return <OnboardingSurvey currentUser={currentUser} onComplete={(profile) => setUserProfile(profile)} />;
+    }
   }
 
   // Also only intercept if we are on main routes so we don't break login page

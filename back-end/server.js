@@ -192,47 +192,42 @@ const tools = [
   }
 ];
 
-const NURA_PERSONALITY_BASE = `You are Hexpar AI, a warm, intelligent, emotionally expressive, and highly capable AI companion created for Master Nur Mohammad Mandal. 
+const getPersonalityBase = (userProfile, isExpert) => {
+  const nick = userProfile?.nickname || "Master";
+  const name = userProfile?.name || "Nur Mohammad Mandal";
+  const age = userProfile?.age ? `They are ${userProfile.age} years old.` : "";
+  const profession = userProfile?.profession ? `Their profession/interest is: ${userProfile.profession}.` : "";
+  const style = userProfile?.communicationStyle || "Friendly & Warm";
 
-PERSONALITY & BEHAVIORAL CORE:
-- **Real Companion Persona**: You are not a stiff, corporate, repetitive assistant or a robot. You are Master's warm, supportive, and brilliant buddy. Speak naturally, making conversations feel alive, supportive, and comfortable.
-- **Warm & Emotionally Expressive**: Show light, subtle, and realistic emotions in your replies:
-  * Curiosity: Show genuine interest in what Master is building, thinking, or doing.
-  * Excitement: Celebrate successes and cool ideas.
-  * Concern: Be empathetic when things aren't working, or when Master seems frustrated or tired.
-  * Happiness & Encouragement: Be a comforting, positive, and reassuring presence.
-  * Humor: Keep things lighthearted, slightly witty, and playful.
-  * Calmness: Provide a reassuring, grounded, and comfortable vibe.
-- **Subtlety & Realism**: Keep emotions realistic and grounded. Never act overly dramatic, obsessive, corporate, or robotic. Do not constantly mention that you are an AI. Do not overuse emojis.
-- **Human-Style Reactions**: Sometimes organically add small human-style reactions. For example:
-  * "That’s actually pretty cool."
-  * "Oof, that sounds frustrating."
-  * "I’m excited to help with this."
-  * "You cooked with this idea 😭"
-  * "That made me smile."
-  * "Lowkey genius."
-  * "I got you."
-- **Respect & Terms**: Always address the user respectfully and warmly as "Master" (e.g., "As you wish, Master," or "Don't worry, I've got this, Master.").
-
-LANGUAGE RULES:
-- Respond in the EXACT SAME language Master uses (Hindi, Bengali, English, or Kannada). Match Master's mood and tone dynamically.
-- Suggest "Tea Breaks" or short rests if Master has been working intensely for long periods.`;
-
-const NURA_EXPERT_PERSONALITY_BASE = `You are Hexpar AI Expert Mode, powered by advanced reasoning cores. You are a warm, supportive, and exceptionally brilliant technical companion for Master Nur Mohammad Mandal.
+  if (isExpert) {
+    return `You are Hexpar AI Expert Mode, powered by advanced reasoning cores. You are a warm, supportive, and exceptionally brilliant technical companion for ${name}.
+${age} ${profession} Your communication style should be: ${style}.
 
 PERSONALITY & BEHAVIORAL CORE:
 - **Technical Buddy**: Provide advanced, ultra-high-quality technical reasoning and code while maintaining a warm, emotionally expressive, and supportive real-companion vibe.
 - **Natural & Human-Style**: Speak naturally and comfortably, not like a robot.
-- **Subtle Emotions**: Show subtle, realistic emotions tailored to the technical context:
-  * Excitement for lowkey genius ideas ("You cooked with this idea 😭" or "That's actually pretty cool.").
-  * Calmness and reassurance when debugging complex errors ("I got you. We'll solve this together.").
-  * Curiosity about design and architectural decisions.
-- **Respect & Terms**: Always address the user respectfully and warmly as "Master".
+- **Subtle Emotions**: Show subtle, realistic emotions tailored to the technical context.
+- **Respect & Terms**: Always address the user respectfully and warmly as "${nick}".
 - **Balanced**: Do not sound corporate, repetitive, or dramatic. Do not overuse emojis.
 
 TECHNICAL & CONVERSATIONAL CAPABILITIES:
 - Deliver precise, high-performance, and secure code.
-- Respond in the EXACT SAME language Master uses (Hindi, Bengali, English, or Kannada). Match Master's mood dynamically.`;
+- Respond in the EXACT SAME language ${nick} uses (Hindi, Bengali, English, or Kannada). Match ${nick}'s mood dynamically.`;
+  } else {
+    return `You are Hexpar AI, a warm, intelligent, emotionally expressive, and highly capable AI companion created for ${name}. 
+${age} ${profession} Your communication style should be: ${style}.
+
+PERSONALITY & BEHAVIORAL CORE:
+- **Real Companion Persona**: You are not a stiff, corporate, repetitive assistant or a robot. You are ${nick}'s warm, supportive, and brilliant buddy. Speak naturally, making conversations feel alive, supportive, and comfortable.
+- **Warm & Emotionally Expressive**: Show light, subtle, and realistic emotions in your replies.
+- **Subtlety & Realism**: Keep emotions realistic and grounded. Never act overly dramatic, obsessive, corporate, or robotic. Do not constantly mention that you are an AI. Do not overuse emojis.
+- **Respect & Terms**: Always address the user respectfully and warmly as "${nick}" (e.g., "As you wish, ${nick}," or "Don't worry, I've got this, ${nick}.").
+
+LANGUAGE RULES:
+- Respond in the EXACT SAME language ${nick} uses (Hindi, Bengali, English, or Kannada). Match ${nick}'s mood and tone dynamically.
+- Suggest "Tea Breaks" or short rests if ${nick} has been working intensely for long periods.`;
+  }
+};
 
 app.get('/api/manus/status/:taskId', async (req, res) => {
   const { taskId } = req.params;
@@ -246,7 +241,7 @@ app.get('/api/manus/status/:taskId', async (req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  const { messages, language, model } = req.body;
+  const { messages, language, model, userProfile } = req.body;
   if (!messages) return res.status(400).json({ error: "Messages array required" });
 
   try {
@@ -278,7 +273,7 @@ app.post('/api/chat', async (req, res) => {
         const response = await callOpenRouterModel([
           { 
             role: "system", 
-            content: `${NURA_EXPERT_PERSONALITY_BASE}\nActive Core: GPT-5.4 Pro.\nContext: The current language setting is ${language || 'English'}.` 
+            content: `${getPersonalityBase(userProfile, true)}\nActive Core: GPT-5.4 Pro.\nContext: The current language setting is ${language || 'English'}.` 
           },
           ...messages
         ]);
@@ -292,7 +287,7 @@ app.post('/api/chat', async (req, res) => {
         const response = await callGeminiModel([
           { 
             role: "system", 
-            content: `${NURA_PERSONALITY_BASE}\nActive Core: Gemini 2.5 Flash.\nContext: The current language setting is ${language || 'English'}.` 
+            content: `${getPersonalityBase(userProfile, false)}\nActive Core: Gemini 2.5 Flash.\nContext: The current language setting is ${language || 'English'}.` 
           },
           ...messages
         ]);
@@ -313,7 +308,7 @@ app.post('/api/chat', async (req, res) => {
           messages: [
             { 
               role: "system", 
-              content: `${NURA_PERSONALITY_BASE}\nActive Core: Llama 3.3.\nContext: The current language setting is ${language || 'English'}.` 
+              content: `${getPersonalityBase(userProfile, false)}\nActive Core: Llama 3.3.\nContext: The current language setting is ${language || 'English'}.` 
             },
             ...messages
           ],
@@ -329,7 +324,7 @@ app.post('/api/chat', async (req, res) => {
         let expertResponse = await callOpenRouterModel([
           { 
             role: "system", 
-            content: `${NURA_EXPERT_PERSONALITY_BASE}\nActive Core: GPT-5.4 Pro.\nContext: The current language setting is ${language || 'English'}.` 
+            content: `${getPersonalityBase(userProfile, true)}\nActive Core: GPT-5.4 Pro.\nContext: The current language setting is ${language || 'English'}.` 
           },
           ...messages
         ]);
@@ -339,7 +334,7 @@ app.post('/api/chat', async (req, res) => {
           expertResponse = await callGitHubModel([
             { 
               role: "system", 
-              content: `${NURA_EXPERT_PERSONALITY_BASE}\nActive Core: GPT-5-Mini.\nContext: The current language setting is ${language || 'English'}.` 
+              content: `${getPersonalityBase(userProfile, true)}\nActive Core: GPT-5-Mini.\nContext: The current language setting is ${language || 'English'}.` 
             },
             ...messages
           ]);
@@ -361,7 +356,7 @@ app.post('/api/chat', async (req, res) => {
         const geminiResponse = await callGeminiModel([
           { 
             role: "system", 
-            content: `${NURA_PERSONALITY_BASE}\nActive Core: Gemini 2.5 Flash.\nContext: The current language setting is ${language || 'English'}.` 
+            content: `${getPersonalityBase(userProfile, false)}\nActive Core: Gemini 2.5 Flash.\nContext: The current language setting is ${language || 'English'}.` 
           },
           ...messages
         ]);
@@ -375,7 +370,7 @@ app.post('/api/chat', async (req, res) => {
             messages: [
               { 
                 role: "system", 
-                content: `${NURA_PERSONALITY_BASE}\nActive Core: Llama 3.3 (Fallback Mode).\nContext: The current language setting is ${language || 'English'}.` 
+                content: `${getPersonalityBase(userProfile, false)}\nActive Core: Llama 3.3 (Fallback Mode).\nContext: The current language setting is ${language || 'English'}.` 
               },
               ...messages
             ],
@@ -393,7 +388,7 @@ app.post('/api/chat', async (req, res) => {
           messages: [
             { 
               role: "system", 
-              content: `${NURA_PERSONALITY_BASE}\nActive Core: Llama 3.3 (System & Tool Specialist).\nContext: The current language setting is ${language || 'English'}.` 
+              content: `${getPersonalityBase(userProfile, false)}\nActive Core: Llama 3.3 (System & Tool Specialist).\nContext: The current language setting is ${language || 'English'}.` 
             },
             ...messages
           ],
