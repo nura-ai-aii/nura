@@ -536,10 +536,14 @@ function App() {
         setTranscript(msg);
         callNeuralCore(msg, file);
       }}
-      historySessions={historySessions}
       currentSessionId={currentSessionId}
-      onLoadSession={handleLoadSession}
-      onDeleteSession={handleDeleteSession}
+      onLoadSession={(sessionId, messages) => {
+        setCurrentSessionId(sessionId);
+        setChatHistory(messages);
+        if (messages && messages.length > 0) {
+          setAiResponse(messages[messages.length - 1].content);
+        }
+      }}
       onNewChat={handleNewChat}
     />;
   }

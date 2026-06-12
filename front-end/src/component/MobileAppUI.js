@@ -1,16 +1,39 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './MobileAppUI.css';
 import { uploadAvatar, signOutUser } from '../firebaseAuth';
-import { createSharedChat } from '../historyService';
+import { createSharedChat, getChatSessions, deleteChatSession } from '../historyService';
 import { emitAlert } from './AlertSystem';
 import shareIcon from '../images/shere-.png';
 
-const MobileAppUI = ({ currentUser, chatHistory, onSendMessage, interactionState, aiResponse, onNavigate, activePath, onAnalyzeImage }) => {
+const MobileAppUI = ({ currentUser, chatHistory, onSendMessage, interactionState, aiResponse, onNavigate, activePath, onAnalyzeImage, currentSessionId, onLoadSession, onNewChat }) => {
   const [inputText, setInputText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isSharingChat, setIsSharingChat] = useState(false);
   const [generatedShareUrl, setGeneratedShareUrl] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [historySessions, setHistorySessions] = useState([]);
+  
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (currentUser) {
+        const sessions = await getChatSessions(currentUser.uid);
+        setHistorySessions(sessions);
+      }
+    };
+    fetchHistory();
+  }, [chatHistory, currentUser]);
+
+  const handleDeleteSession = async (e, sessionId) => {
+    e.stopPropagation();
+    if (window.confirm("Are you sure you want to delete this session?")) {
+      await deleteChatSession(currentUser.uid, sessionId);
+      const sessions = await getChatSessions(currentUser.uid);
+      setHistorySessions(sessions);
+      if (currentSessionId === sessionId) {
+        if (onNewChat) onNewChat();
+      }
+    }
+  };
   
   const fileInputRef = useRef(null);
   const avatarInputRef = useRef(null);
@@ -168,10 +191,7 @@ const MobileAppUI = ({ currentUser, chatHistory, onSendMessage, interactionState
                         
                         <button 
                           className="chat-item-delete-btn" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onDeleteSession) onDeleteSession(e, session.sessionId);
-                          }}
+                          onClick={(e) => handleDeleteSession(e, session.sessionId)}
                           title="Delete session"
                         >
                           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -185,6 +205,9 @@ const MobileAppUI = ({ currentUser, chatHistory, onSendMessage, interactionState
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
 
       {/* Share Modal Popup */}
       {generatedShareUrl && (

@@ -13,8 +13,10 @@ import {
   GithubAuthProvider,
   sendPasswordResetEmail,
   signInAnonymously,
+  updateProfile,
 } from "firebase/auth";
-
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "./firebase";
 // Initialize Firebase Auth (no Recaptcha here) 
 const auth = getAuth();
 
@@ -96,9 +98,6 @@ export const resetUserPassword = async (email) => {
   }
 };
 
-import { updateProfile } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "./firebase";
 
 export const uploadAvatar = async (file, user) => {
   if (!user || !file) throw new Error("Missing user or file.");

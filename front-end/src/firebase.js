@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Firebase configuration (auto-generated for hexparai.firebaseapp.com)
 const firebaseConfig = {
@@ -12,10 +13,6 @@ const firebaseConfig = {
   appId: "1:509870516408:web:327f8783e1826274e72c4d",
   measurementId: "G-SB8NXVBWY4"
 };
-
-
-import { getStorage } from "firebase/storage";
-
 // Initialize Firebase app and analytics safely
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
