@@ -402,21 +402,8 @@ export default function PlasmaOrb({ color = "#00ffe1", size = 300, sensitivity =
 
       // Evolution Stage 2: Data Ring (if count > 10)
       let dataRing = null;
-      if (interactionCount > 10) {
-        const ringGeo = new THREE.TorusGeometry(1.2, 0.02, 16, 100);
-        const ringMat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.4, wireframe: true });
-        dataRing = new THREE.Mesh(ringGeo, ringMat);
-        mainGroup.add(dataRing);
-      }
-
       // Evolution Stage 3: Neural Core (if count > 50)
       let neuralCore = null;
-      if (interactionCount > 50) {
-        const coreGeo = new THREE.IcosahedronGeometry(0.4, 1);
-        const coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.3 });
-        neuralCore = new THREE.Mesh(coreGeo, coreMat);
-        mainGroup.add(neuralCore);
-      }
 
       sceneRef.current = { scene, camera, renderer, controls, mainGroup, plasmaMesh, plasmaMat, shellFrontMat, pMat, THREE, dataRing, neuralCore };
 
