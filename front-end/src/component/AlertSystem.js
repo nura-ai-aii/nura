@@ -61,6 +61,15 @@ const getAlertStyle = (type) => {
   return 'warning';
 };
 
+const getErrorCode = (type) => {
+  let hash = 5381;
+  for (let i = 0; i < type.length; i++) {
+    hash = (hash * 33) ^ type.charCodeAt(i);
+  }
+  // Ensure it's exactly 10 digits
+  return (Math.abs(hash) % 10000000000).toString().padStart(10, '0');
+};
+
 const getAlertIcon = (type) => {
   if (type.includes('DOWN') || type.includes('ERROR')) return '⚠';
   if (type.includes('RESTORED') || type.includes('OK')) return '✓';
@@ -122,23 +131,7 @@ export default function AlertSystem({ apiHealth }) {
 
   return (
     <>
-      {/* Critical Full-Screen Overlay */}
-      {criticalError && (
-        <div className="critical-overlay" onClick={() => setCriticalError(null)}>
-          <div className="critical-box">
-            <div className="critical-icon">!</div>
-            <div className="critical-title">SYSTEM ALERT</div>
-            <div className="critical-type">{criticalError.type.replace(/_/g, ' ')}</div>
-            <div className="critical-msg">{criticalError.message}</div>
-            <div className="critical-hint">Check backend server at {BACKEND_URL}</div>
-            <button className="critical-dismiss" onClick={() => setCriticalError(null)}>
-              ACKNOWLEDGE
-            </button>
-          </div>
-          <div className="critical-scan-h" />
-          <div className="critical-scan-v" />
-        </div>
-      )}
+      {/* Critical Full-Screen Overlay Removed as per user request */}
 
       {/* Toast Notifications */}
       <DraggableComponent id="alert-toasts" initialPos={{ bottom: 30, right: 1200 }}>
@@ -151,8 +144,14 @@ export default function AlertSystem({ apiHealth }) {
             >
               <span className="toast-icon">{getAlertIcon(toast.type)}</span>
               <div className="toast-body">
-                <div className="toast-type">{toast.type.replace(/_/g, ' ')}</div>
-                <div className="toast-msg">{toast.message}</div>
+                <div className="toast-type">
+                  {getAlertStyle(toast.type) === 'error' ? 'SYSTEM ERROR' : toast.type.replace(/_/g, ' ')}
+                </div>
+                <div className="toast-msg">
+                  {getAlertStyle(toast.type) === 'error' 
+                    ? `Something went wrong. Unique code: ${getErrorCode(toast.type)}. Please share this with us.`
+                    : toast.message}
+                </div>
               </div>
               <div className="toast-bar" />
             </div>
