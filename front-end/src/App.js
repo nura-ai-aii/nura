@@ -290,6 +290,7 @@ function App() {
             { role: "user", content: `[Generated LTX-2 video from image with prompt: "${userInput}"]` },
             { role: "assistant", content: "Successfully generated video from your starting frame using LTX-2 19B Distilled!", videoUrl: mediaData.url }
           ]);
+          setTranscript("");
           emitAlert('SYS_RESTORED', 'LTX-2 PREMIUM VIDEO GENERATION COMPLETED! 🎬', false);
           const nick = userProfile?.nickname || "Master";
           speakResponse(`Starting frame animated successfully, ${nick}.`, speechLang);
@@ -300,6 +301,7 @@ function App() {
         console.error("LTX-2 video generation failed:", err);
         setAiResponse("UPLINK FAILURE: LTX-2 VIDEO GENERATOR UNREACHABLE.");
         setInteractionState(STATE.IDLE);
+        setTranscript("");
         emitAlert('SYS_ERROR', 'LTX-2 ANIMATION FAILED. COGNITIVE ENGINE OFFLINE.', true);
       }
       return;
@@ -319,6 +321,7 @@ function App() {
 
       setAiResponse(data.text);
       setChatHistory(prev => [...prev, { role: "user", content: userInput }, { role: "assistant", content: data.text }]);
+      setTranscript("");
 
       // Firestore chat session saving logic
       if (currentUser) {
@@ -402,6 +405,7 @@ function App() {
       console.error("Neural Core Error:", error);
       setAiResponse("UPLINK FAILURE: NEURAL CORE UNREACHABLE.");
       setInteractionState(STATE.IDLE);
+      setTranscript("");
     }
   };
 
@@ -433,6 +437,7 @@ function App() {
         { role: "user", content: "[Uploaded Image for Analysis]" }, 
         { role: "assistant", content: data.text }
       ]);
+      setTranscript("");
 
       const newCount = interactionCount + 1;
       setInteractionCount(newCount);
@@ -448,6 +453,7 @@ function App() {
       console.error("Neural Core Vision Error:", error);
       setAiResponse("UPLINK FAILURE: VISION ANALYZER CORE UNREACHABLE.");
       setInteractionState(STATE.IDLE);
+      setTranscript("");
       emitAlert('SYS_ERROR', "COGNITIVE UPLINK FAILED: LENS DISCONNECTED 😭", true);
     }
   };
