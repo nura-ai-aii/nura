@@ -14,6 +14,8 @@ import {
   sendPasswordResetEmail,
   signInAnonymously,
   updateProfile,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
 } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "./firebase";
@@ -118,4 +120,4 @@ export const uploadAvatar = async (file, user) => {
   }
 };
 
-export { auth };
+export { auth, RecaptchaVerifier, signInWithPhoneNumber };

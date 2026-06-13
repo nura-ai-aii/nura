@@ -8,7 +8,10 @@ import {
   signUpUser, 
   signInWithGoogle, 
   signInWithGithub, 
-  resetUserPassword
+  resetUserPassword,
+  auth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
 } from "../firebaseAuth";
 
 export default function Login({ mode: initialMode = "login" }) {
@@ -21,6 +24,12 @@ export default function Login({ mode: initialMode = "login" }) {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Phone Auth State
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   // Sync internal mode with routing prop
   useEffect(() => {
@@ -62,6 +71,57 @@ export default function Login({ mode: initialMode = "login" }) {
     setLoading(false);
   };
 
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+          // reCAPTCHA solved
+        }
+      });
+    }
+  };
+
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccessMessage("");
+    setLoading(true);
+    try {
+      setupRecaptcha();
+      const appVerifier = window.recaptchaVerifier;
+      const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+      const result = await signInWithPhoneNumber(auth, formattedPhone, appVerifier);
+      setConfirmationResult(result);
+      setIsOtpSent(true);
+      setSuccessMessage("OTP sent successfully!");
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to send OTP");
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      if (!confirmationResult) throw new Error("Please request OTP first.");
+      await confirmationResult.confirm(otp);
+      localStorage.setItem("hexpar_lastLogin", Date.now().toString());
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      setError("Invalid OTP. Please try again.");
+    }
+    setLoading(false);
+  };
+
   const handleSocialSignIn = async (provider) => {
     setError("");
     setSuccessMessage("");
@@ -74,7 +134,9 @@ export default function Login({ mode: initialMode = "login" }) {
       } else if (provider === "facebook") {
         throw new Error("Facebook authentication is coming soon.");
       } else if (provider === "phone") {
-        throw new Error("Phone authentication is coming soon.");
+        setMode("phone");
+        setLoading(false);
+        return;
       }
       localStorage.setItem("hexpar_lastLogin", Date.now().toString());
       navigate("/");
@@ -228,8 +290,51 @@ export default function Login({ mode: initialMode = "login" }) {
               </form>
             )}
 
+            {/* PHONE LOGIN FLOW */}
+            {mode === "phone" && (
+              <div className="login-form-container">
+                {!isOtpSent ? (
+                  <form onSubmit={handleSendOtp}>
+                    <div className="form-group">
+                      <label className="form-label">Phone Number</label>
+                      <input
+                        type="tel"
+                        placeholder="+1 234 567 8900"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        required
+                        className="form-input-field"
+                      />
+                    </div>
+                    <div id="recaptcha-container"></div>
+                    <button type="submit" className="login-action-btn" disabled={loading}>
+                      {loading ? <span className="btn-spinner"></span> : <span>Send Verification Code</span>}
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleVerifyOtp}>
+                    <div className="form-group">
+                      <label className="form-label">Verification Code</label>
+                      <input
+                        type="text"
+                        placeholder="Enter 6-digit OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        required
+                        className="form-input-field"
+                      />
+                    </div>
+                    <button type="submit" className="login-action-btn" disabled={loading}>
+                      {loading ? <span className="btn-spinner"></span> : <span>Verify & Login</span>}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+
             {/* Social logins */}
-            {mode !== "reset" && (
+            {/* Social logins */}
+            {(mode !== "reset" && mode !== "phone") && (
               <>
                 <div className="social-divider">
                   <span className="divider-line"></span>
