@@ -171,6 +171,28 @@ function App() {
     return sessionStorage.getItem('nura_booted') !== 'true';
   });
 
+  const [showSurveyPopup, setShowSurveyPopup] = useState(false);
+  const [showSurveyForm, setShowSurveyForm] = useState(false);
+
+  useEffect(() => {
+    if (currentUser && !isCheckingSurvey && userProfile && !userProfile.surveyCompleted) {
+      // Show popup initially on load
+      setShowSurveyPopup(true);
+      const initialTimer = setTimeout(() => setShowSurveyPopup(false), 15000);
+
+      // And then every 5 minutes (300,000ms)
+      const interval = setInterval(() => {
+        setShowSurveyPopup(true);
+        setTimeout(() => setShowSurveyPopup(false), 15000);
+      }, 300000);
+
+      return () => {
+        clearTimeout(initialTimer);
+        clearInterval(interval);
+      };
+    }
+  }, [currentUser, isCheckingSurvey, userProfile?.surveyCompleted]);
+
   const lastProcessedTranscriptRef = useRef("");
 
   const handleStartupComplete = () => {
@@ -535,40 +557,75 @@ function App() {
     );
   }
 
-  // Check Survey
-  if (currentUser && !isCheckingSurvey && !isShareRoute) {
-    if (!userProfile?.surveyCompleted) {
-      return <OnboardingSurvey currentUser={currentUser} onComplete={(profile) => setUserProfile(profile)} />;
-    }
-  }
+  // Survey logic moved to non-blocking overlays
 
-  // Also only intercept if we are on main routes so we don't break login page
   const isMainAppRoute = !location.pathname.startsWith('/log-in') && !location.pathname.startsWith('/sign-in') && !location.pathname.startsWith('/register');
 
+  const surveyOverlays = (
+    <>
+      {showSurveyPopup && currentUser && !isCheckingSurvey && (!userProfile || !userProfile.surveyCompleted) && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid #00f2fe',
+          padding: '15px 20px',
+          borderRadius: '12px',
+          color: '#fff',
+          zIndex: 100000,
+          boxShadow: '0 0 20px rgba(0, 242, 254, 0.3)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          maxWidth: '300px'
+        }}>
+          <button style={{
+            position: 'absolute', top: '5px', right: '5px', background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontSize: '16px'
+          }} onClick={() => setShowSurveyPopup(false)}>✕</button>
+          <p style={{ margin: '5px 0', fontSize: '14px', lineHeight: '1.4', paddingRight: '15px' }}>Please fill your details to get more help using AI</p>
+          <button style={{
+            background: 'linear-gradient(45deg, #00f2fe, #4facfe)', border: 'none', padding: '8px', borderRadius: '6px', color: '#fff', cursor: 'pointer', fontWeight: 'bold'
+          }} onClick={() => { setShowSurveyPopup(false); setShowSurveyForm(true); }}>Setup</button>
+        </div>
+      )}
+      {showSurveyForm && (
+        <OnboardingSurvey currentUser={currentUser} onComplete={(profile) => {
+          setUserProfile(profile);
+          setShowSurveyForm(false);
+        }} />
+      )}
+    </>
+  );
+
   if (isMobileUIRoute || (isMobileViewport && isMainAppRoute)) {
-    return <MobileAppUI 
-      currentUser={currentUser}
-      transcript={transcript}
-      aiResponse={aiResponse}
-      chatHistory={chatHistory}
-      interactionState={interactionState}
-      activePath={location.pathname}
-      onNavigate={(path) => navigate(path)}
-      onAnalyzeImage={callVisionCore}
-      onSendMessage={(msg, file) => {
-        setTranscript(msg);
-        callNeuralCore(msg, file);
-      }}
-      currentSessionId={currentSessionId}
-      onLoadSession={(sessionId, messages) => {
-        setCurrentSessionId(sessionId);
-        setChatHistory(messages);
-        if (messages && messages.length > 0) {
-          setAiResponse(messages[messages.length - 1].content);
-        }
-      }}
-      onNewChat={handleNewChat}
-    />;
+    return <>
+      <MobileAppUI 
+        currentUser={currentUser}
+        transcript={transcript}
+        aiResponse={aiResponse}
+        chatHistory={chatHistory}
+        interactionState={interactionState}
+        activePath={location.pathname}
+        onNavigate={(path) => navigate(path)}
+        onAnalyzeImage={callVisionCore}
+        onSendMessage={(msg, file) => {
+          setTranscript(msg);
+          callNeuralCore(msg, file);
+        }}
+        currentSessionId={currentSessionId}
+        onLoadSession={(sessionId, messages) => {
+          setCurrentSessionId(sessionId);
+          setChatHistory(messages);
+          if (messages && messages.length > 0) {
+            setAiResponse(messages[messages.length - 1].content);
+          }
+        }}
+        onNewChat={handleNewChat}
+      />
+      {surveyOverlays}
+    </>;
   }
 
   if (isShareRoute) {
@@ -578,6 +635,7 @@ function App() {
         <Routes>
           <Route path="/share/:chatId" element={<ShareChat />} />
         </Routes>
+        {surveyOverlays}
       </div>
     );
   }
@@ -657,6 +715,7 @@ function App() {
           <Route path="/register" element={<Login mode="signup" />} />
           <Route path="/forgot-password" element={<Login mode="reset" />} />
         </Routes>
+        {surveyOverlays}
 
         {/* Hidden PlasmaOrb to provide speech recognition logic for PremiumUI */}
         <div style={{ display: 'none' }}>
@@ -826,6 +885,8 @@ function App() {
           <StatusTerminal interactionState={interactionState} />
         </DraggableComponent>
       )}
+
+      {surveyOverlays}
     </div>
   );
 }
