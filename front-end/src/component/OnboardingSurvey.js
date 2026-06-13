@@ -46,8 +46,6 @@ const OnboardingSurvey = ({ currentUser, onComplete }) => {
     <div className="survey-glass-container">
       <div className="survey-glass-card">
         <div className="survey-glass-header">
-          <h2>Initialize Core</h2>
-          <p>Personalize your AI companion.</p>
         </div>
 
         <form className="survey-glass-form" onSubmit={handleSubmit}>
