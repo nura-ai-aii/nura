@@ -30,7 +30,11 @@ const OnboardingSurvey = ({ currentUser, onComplete }) => {
     };
 
     try {
-      await setDoc(doc(db, "users", currentUser.uid), userProfile, { merge: true });
+      // Run setDoc asynchronously so UI doesn't hang waiting for server response
+      setDoc(doc(db, "users", currentUser.uid), userProfile, { merge: true }).catch((err) => {
+        console.error("Background sync error:", err);
+      });
+      // Immediately transition
       onComplete(userProfile);
     } catch (error) {
       console.error("Error saving survey:", error);
