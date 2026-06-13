@@ -31,7 +31,6 @@ body {
   background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--text-main);
-  overflow-x: hidden;
 }
 
 .App {
