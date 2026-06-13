@@ -8,8 +8,7 @@ import {
   signUpUser, 
   signInWithGoogle, 
   signInWithGithub, 
-  resetUserPassword,
-  signInWithAnonymous
+  resetUserPassword
 } from "../firebaseAuth";
 
 export default function Login({ mode: initialMode = "login" }) {
