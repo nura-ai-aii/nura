@@ -191,7 +191,7 @@ function App() {
         clearInterval(interval);
       };
     }
-  }, [currentUser, isCheckingSurvey, userProfile?.surveyCompleted]);
+  }, [currentUser, isCheckingSurvey, userProfile?.surveyCompleted, userProfile]);
 
   const lastProcessedTranscriptRef = useRef("");
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AlertSystem.css';
 import DraggableComponent from './DraggableComponent';
-import { BACKEND_URL } from '../config';
 
 
 let alertIdCounter = 0;
@@ -78,12 +77,10 @@ const getAlertIcon = (type) => {
 
 export default function AlertSystem({ apiHealth }) {
   const [toasts, setToasts] = useState([]);
-  const [criticalError, setCriticalError] = useState(null);
 
   const addToast = useCallback((alert) => {
     setToasts(prev => [alert, ...prev].slice(0, 6));
     if (alert.critical) {
-      setCriticalError(alert);
       playAlertSound('critical');
     } else {
       const soundType = getAlertStyle(alert.type);
@@ -116,7 +113,6 @@ export default function AlertSystem({ apiHealth }) {
         addToast({ type: 'BACKEND_DOWN', message: 'Backend server is unreachable!', critical: true, id: ++alertIdCounter, time: Date.now() });
       } else if (prev.backend !== 'ok' && apiHealth.backend === 'ok') {
         addToast({ type: 'BACKEND_RESTORED', message: 'Backend connection restored.', critical: false, id: ++alertIdCounter, time: Date.now() });
-        setCriticalError(null);
       }
       if (prev.groq === 'connected' && apiHealth.groq !== 'connected') {
         addToast({ type: 'GROQ_ERROR', message: 'Groq AI API connection failed!', critical: false, id: ++alertIdCounter, time: Date.now() });
