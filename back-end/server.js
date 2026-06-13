@@ -832,37 +832,43 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
         }
       });
 
-      const projectId = response.data.project;
-      if (!projectId) {
-        throw new Error("No project ID returned by json2video");
+      const taskId = response.data?.data?.taskId || response.data?.taskId;
+      if (!taskId) {
+        throw new Error("No task ID returned by Grok Video API: " + JSON.stringify(response.data));
       }
 
-      console.log(`[JSON2VIDEO] Render job created. Project ID: ${projectId}. Starting polling...`);
+      console.log(`[GROK-VIDEO] Render job created. Task ID: ${taskId}. Starting polling...`);
 
-      // Poll every 4 seconds for up to 15 times (1 minute timeout)
+      // Poll every 4 seconds for up to 30 times (2 minutes timeout)
       let videoUrl = "";
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 30; i++) {
         await new Promise(resolve => setTimeout(resolve, 4000));
         
-        const statusRes = await axios.get(`https://api.json2video.com/v2/movies?project=${projectId}`, {
-          headers: { 'x-api-key': json2videoKey }
+        // Polling endpoint
+        const statusRes = await axios.get(`${kieBaseUrl}/api/v1/jobs/recordInfo`, {
+          params: { jobId: taskId, taskId: taskId }, // Pass both to be safe
+          headers: {
+            'Authorization': `Bearer ${kieApiKey}`,
+            'Accept': 'application/json'
+          }
         });
 
-        const movie = statusRes.data.movie;
-        console.log(`[JSON2VIDEO] Polling status iteration ${i+1}: ${movie.status}`);
+        const data = statusRes.data?.data || statusRes.data;
+        const status = data?.status?.toLowerCase();
+        console.log(`[GROK-VIDEO] Polling status iteration ${i+1}: ${status}`);
         
-        if (movie.status === 'completed' && movie.url) {
-          videoUrl = movie.url;
+        if (status === 'completed' || status === 'success') {
+          videoUrl = data?.result?.url || data?.videoUrl || data?.url;
           break;
-        } else if (movie.status === 'failed') {
-          throw new Error("json2video render job failed");
+        } else if (status === 'failed' || status === 'error') {
+          throw new Error("Grok Video render job failed: " + JSON.stringify(data));
         }
       }
 
       if (videoUrl) {
         return res.json({ url: videoUrl });
       } else {
-        throw new Error("json2video render job timed out");
+        throw new Error("Grok Video render job timed out");
       }
     } else {
       return res.status(400).json({ error: "Unsupported media generation type." });
