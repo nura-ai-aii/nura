@@ -821,10 +821,12 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
         model: "grok-imagine-video-1-5-preview",
         input: {
           prompt: prompt,
+          image_urls: [],
           aspect_ratio: "16:9",
           resolution: "480p",
           duration: 8
-        }
+        },
+        callBackUrl: "https://nura-h0p6.onrender.com/api/callback"
       }, {
         headers: {
           'Authorization': `Bearer ${kieApiKey}`,
@@ -844,31 +846,57 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
       for (let i = 0; i < 30; i++) {
         await new Promise(resolve => setTimeout(resolve, 4000));
         
-        // Polling endpoint
-        const statusRes = await axios.get(`${kieBaseUrl}/api/v1/jobs/recordInfo`, {
-          params: { jobId: taskId, taskId: taskId }, // Pass both to be safe
-          headers: {
-            'Authorization': `Bearer ${kieApiKey}`,
-            'Accept': 'application/json'
-          }
-        });
+        try {
+          // Some KIE APIs use /api/v1/jobs, others use /v1/jobs. Let's try the one from veo first
+          const pollEndpoint = `${kieBaseUrl}/v1/jobs/recordInfo`;
+          const statusRes = await axios.get(pollEndpoint, {
+            params: { jobId: taskId, taskId: taskId }, 
+            headers: {
+              'Authorization': `Bearer ${kieApiKey}`,
+              'Accept': 'application/json'
+            }
+          });
 
-        const data = statusRes.data?.data || statusRes.data;
-        const status = data?.status?.toLowerCase();
-        console.log(`[GROK-VIDEO] Polling status iteration ${i+1}: ${status}`);
-        
-        if (status === 'completed' || status === 'success') {
-          videoUrl = data?.result?.url || data?.videoUrl || data?.url;
-          break;
-        } else if (status === 'failed' || status === 'error') {
-          throw new Error("Grok Video render job failed: " + JSON.stringify(data));
+          const data = statusRes.data?.data || statusRes.data;
+          const status = data?.status?.toLowerCase();
+          console.log(`[GROK-VIDEO] Polling status iteration ${i+1}: ${status}`);
+          
+          if (status === 'completed' || status === 'success') {
+            videoUrl = data?.result?.url || data?.videoUrl || data?.url;
+            break;
+          } else if (status === 'failed' || status === 'error') {
+            throw new Error("Grok Video render job failed: " + JSON.stringify(data));
+          }
+        } catch (pollErr) {
+          // If polling throws 404, try the other endpoint format
+          if (pollErr.response?.status === 404) {
+            try {
+              const altStatusRes = await axios.get(`${kieBaseUrl}/api/v1/jobs/recordInfo`, {
+                params: { jobId: taskId, taskId: taskId },
+                headers: { 'Authorization': `Bearer ${kieApiKey}` }
+              });
+              const data = altStatusRes.data?.data || altStatusRes.data;
+              const status = data?.status?.toLowerCase();
+              console.log(`[GROK-VIDEO] Polling alt status iteration ${i+1}: ${status}`);
+              if (status === 'completed' || status === 'success') {
+                videoUrl = data?.result?.url || data?.videoUrl || data?.url;
+                break;
+              } else if (status === 'failed' || status === 'error') {
+                throw new Error("Grok Video render job failed on alt endpoint: " + JSON.stringify(data));
+              }
+            } catch (altErr) {
+              console.warn(`[GROK-VIDEO] Alt polling failed: ${altErr.message}`);
+            }
+          } else {
+             console.warn(`[GROK-VIDEO] Polling warning: ${pollErr.message}`);
+          }
         }
       }
 
       if (videoUrl) {
         return res.json({ url: videoUrl });
       } else {
-        throw new Error("Grok Video render job timed out");
+        throw new Error("Grok Video render job timed out or polling failed");
       }
     } else {
       return res.status(400).json({ error: "Unsupported media generation type." });
