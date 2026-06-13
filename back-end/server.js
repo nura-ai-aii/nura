@@ -663,7 +663,7 @@ app.post('/api/analyze-image', upload.single('image'), async (req, res) => {
 });
 
 // ──────────────────────────────────────────────
-// TEXT TO SPEECH (Edge Neural)
+// TEXT TO SPEECH (ElevenLabs & Edge Neural Fallback)
 // ──────────────────────────────────────────────
 app.post('/api/tts', async (req, res) => {
   const { text, lang: requestedLang } = req.body;
@@ -681,15 +681,47 @@ app.post('/api/tts', async (req, res) => {
   } else if (isKannada) {
     voice = 'kn-IN-GaganNeural';
   } else {
-    // If the text is written in English/Roman characters, choose English voices based on requested locale
     if (requestedLang?.startsWith('en-IN') || requestedLang?.startsWith('hi-IN') || requestedLang?.startsWith('bn-IN') || requestedLang?.startsWith('kn-IN')) {
-      voice = 'en-IN-PrabhatNeural'; // Highly natural Indian English accent
+      voice = 'en-IN-PrabhatNeural'; 
     } else {
       voice = 'en-US-GuyNeural';
     }
   }
 
   try {
+    // 1. Attempt ElevenLabs Premium Voice Synthesis
+    if (process.env.ELEVENLABS_API_KEY) {
+      try {
+        const elevenVoiceId = process.env.ELEVENLABS_VOICE_ID || 'pNInz6obpgDQGcFmaJcg'; // Default to "Adam" (deep male)
+        const elevenResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}?output_format=mp3_44100_128`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': process.env.ELEVENLABS_API_KEY
+          },
+          body: JSON.stringify({
+            text: text,
+            model_id: "eleven_multilingual_v2", // Multilingual model supports Hindi, etc.
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75
+            }
+          })
+        });
+
+        if (elevenResponse.ok) {
+          const arrayBuffer = await elevenResponse.arrayBuffer();
+          const base64Audio = Buffer.from(arrayBuffer).toString('base64');
+          return res.json({ audio: base64Audio });
+        } else {
+          console.warn(`[TTS] ElevenLabs API failed with status ${elevenResponse.status}. Falling back to MsEdgeTTS.`);
+        }
+      } catch (err) {
+        console.warn(`[TTS] ElevenLabs fetch failed: ${err.message}. Falling back to MsEdgeTTS.`);
+      }
+    }
+
+    // 2. Fallback to Microsoft Edge TTS
     const tts = new MsEdgeTTS();
     await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     const result = tts.toStream(text);
