@@ -364,12 +364,12 @@ function App() {
                     throw new Error("Invalid video URL returned");
                   }
                 } catch (err) {
-                  console.error("JSON2Video render failed, reverting to backup animated canvas:", err);
+                  console.error("Grok Video render failed, reverting to backup animated canvas:", err);
                   const safeVideoPrompt = (r.prompt || "futuristic AI animation").substring(0, 800);
                   const encoded = encodeURIComponent(safeVideoPrompt);
                   const vidUrl = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${Date.now()}&model=flux-pro`;
                   setChatHistory(prev => [...prev, { role: "assistant", content: "Fallback animated video rendering complete.", videoUrl: vidUrl }]);
-                  emitAlert('SYS_ERROR', 'JSON2VIDEO EXHAUSTED: RETREATING TO ANIMATED FALLBACK CANVAS.', true);
+                  emitAlert('SYS_ERROR', 'GROK VIDEO API EXHAUSTED: RETREATING TO FALLBACK CANVAS.', true);
                 }
               })();
             }
