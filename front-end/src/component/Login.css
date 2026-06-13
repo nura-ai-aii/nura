@@ -252,38 +252,45 @@
 
 /* Social Login Buttons */
 .social-buttons-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
-.social-login-btn {
-  background: #ffffff;
-  border: none;
+.social-login-btn.glass-social {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 0.75rem;
+  padding: 0.875rem 1.5rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  justify-content: flex-start;
+  gap: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
 }
 
-.social-login-btn:hover {
+.social-login-btn.glass-social:hover {
+  background: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  filter: brightness(0.95);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 242, 254, 0.2);
+  border-color: rgba(0, 242, 254, 0.3);
 }
 
-.social-login-btn:active {
+.social-login-btn.glass-social:active {
   transform: translateY(0);
 }
 
-.social-login-btn.google svg {
-  width: 20px;
-  height: 20px;
+.social-login-btn.glass-social svg {
+  width: 22px;
+  height: 22px;
 }
 
 .social-login-btn.github {
