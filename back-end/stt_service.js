@@ -2,8 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const Groq = require('groq-sdk');
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
+let groq = null;
 /**
  * Transcribes an audio buffer using Groq Whisper Large v3 Turbo (Ultra-fast).
  * @param {Buffer} audioBuffer - The raw audio data.
@@ -23,6 +22,15 @@ async function transcribeAudio(audioBuffer, mimeType, language) {
   try {
     console.log(`[STT] Processing audio with Groq Whisper Ultra-Fast (${language})...`);
     
+    if (!process.env.GROQ_API_KEY) {
+      console.warn('[STT] GROQ_API_KEY is missing! Cannot transcribe audio. Please set the environment variable.');
+      return '';
+    }
+
+    if (!groq) {
+      groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    }
+
     const langCode = language ? language.split('-')[0] : 'en';
     
     // Whisper-large-v3-turbo is currently the fastest high-accuracy model
