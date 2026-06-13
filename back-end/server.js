@@ -813,28 +813,21 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
       }
 
     } else if (type === 'video') {
-      const json2videoKey = process.env.JSON2VIDEO_API_KEY || 'Ng0FQKfiHI9CpfuUtugk5dlPhqYGs0QBGl5B9bAx';
+      const kieApiKey = process.env.VIDEO_API_KEY;
+      const kieBaseUrl = process.env.VIDEO_API_URL || 'https://api.kie.ai';
 
-      console.log(`[JSON2VIDEO] Triggering render job for: "${prompt}"`);
-      const response = await axios.post('https://api.json2video.com/v2/movies', {
-        width: 1024,
-        height: 1024,
-        fps: 30,
-        scenes: [
-          {
-            duration: 5,
-            elements: [
-              {
-                type: "video",
-                prompt: prompt,
-                model: "luma-ray"
-              }
-            ]
-          }
-        ]
+      console.log(`[GROK-VIDEO] Triggering render job for: "${prompt}"`);
+      const response = await axios.post(`${kieBaseUrl}/api/v1/jobs/createTask`, {
+        model: "grok-imagine-video-1-5-preview",
+        input: {
+          prompt: prompt,
+          aspect_ratio: "16:9",
+          resolution: "480p",
+          duration: 8
+        }
       }, {
         headers: {
-          'x-api-key': json2videoKey,
+          'Authorization': `Bearer ${kieApiKey}`,
           'Content-Type': 'application/json'
         }
       });

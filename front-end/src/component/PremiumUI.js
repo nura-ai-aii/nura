@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './PremiumUI.css';
+import NeonIcon from './NeonIcon';
 import { getChatSessions, deleteChatSession, createSharedChat } from '../historyService';
 import { signOutUser } from '../firebaseAuth';
 import { emitAlert } from './AlertSystem';
@@ -313,46 +314,46 @@ export default function PremiumUI({
           <span className="sidebar-section-title">AI TOOLS</span>
           <nav className="sidebar-nav-list">
             <button className="sidebar-nav-item upgrade-btn" onClick={handleUpgradeClick} style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2))', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-              <span className="nav-item-icon" style={{ color: '#c084fc' }}>💎</span>
-              <span style={{ color: '#fff', fontWeight: 600 }}>Upgrade to Premium</span>
+              <span className="nav-item-icon" style={{ color: '#c084fc' }}><NeonIcon icon="Sparkles" size={18} colorClass="neon-primary" /></span>
+              <span className="nav-item-text" style={{ color: '#fff', fontWeight: 600 }}>Upgrade to Hexper Pro</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => setShowBrainNetwork(true)}>
-              <span className="nav-item-icon" style={{ color: '#10b981' }}>🧠</span>
-              <span>Neural Brain Diagnostics</span>
+              <span className="nav-item-icon" style={{ color: '#10b981' }}><NeonIcon icon="BrainCircuit" size={18} colorClass="neon-green" /></span>
+              <span className="nav-item-text">Brain Network</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Create an image of ")}>
-              <span className="nav-item-icon image">🎨</span>
-              <span>AI Image Generator</span>
+              <span className="nav-item-icon image"><NeonIcon icon="Image" size={18} colorClass="neon-blue" /></span>
+              <span className="nav-item-text">AI Image Generator</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Generate a video with AI of ")}>
-              <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>🎥</span>
-              <span>Generate Video with AI</span>
+              <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}><NeonIcon icon="Video" size={18} colorClass="neon-pink" /></span>
+              <span className="nav-item-text">AI Video Generator</span>
             </button>
             <button className="sidebar-nav-item" onClick={handleGenerateShortVideo}>
-              <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}>⏱️</span>
-              <span>Generate 15s Video</span>
+              <span className="nav-item-icon video" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}><NeonIcon icon="Clock" size={18} colorClass="neon-pink" /></span>
+              <span className="nav-item-text">Generate Short Video</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleAnimateImageClick()}>
-              <span className="nav-item-icon video" style={{ background: 'rgba(167, 139, 250, 0.15)', color: '#c084fc' }}>🖼️</span>
-              <span>Animate Image with LTX-2</span>
+              <span className="nav-item-icon video" style={{ background: 'rgba(167, 139, 250, 0.15)', color: '#c084fc' }}><NeonIcon icon="Film" size={18} colorClass="neon-primary" /></span>
+              <span className="nav-item-text">Animate Image</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Create a modern website layout for ")}>
-              <span className="nav-item-icon website">🌐</span>
-              <span>Website Generator</span>
+              <span className="nav-item-icon website"><NeonIcon icon="LayoutTemplate" size={18} colorClass="neon-blue" /></span>
+              <span className="nav-item-text">UI/UX Builder</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Create a presentation draft about ")}>
-              <span className="nav-item-icon presentation">📊</span>
-              <span>Presentation Maker</span>
+              <span className="nav-item-icon presentation"><NeonIcon icon="BarChart3" size={18} colorClass="neon-green" /></span>
+              <span className="nav-item-text">Presentation Maker</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => {
               if (fileInputRef.current) fileInputRef.current.click();
             }}>
-              <span className="nav-item-icon vision">👁</span>
-              <span>AI Vision scanner</span>
+              <span className="nav-item-icon vision"><NeonIcon icon="Eye" size={18} colorClass="neon-primary" /></span>
+              <span className="nav-item-text">Vision AI Analysis</span>
             </button>
             <button className="sidebar-nav-item" onClick={() => handleCardClick("Explore AI applications for ")}>
-              <span className="nav-item-icon explore">🚀</span>
-              <span>Explore AI Apps</span>
+              <span className="nav-item-icon explore"><NeonIcon icon="Rocket" size={18} colorClass="neon-pink" /></span>
+              <span className="nav-item-text">Explore Solutions</span>
             </button>
           </nav>
         </div>

@@ -1,0 +1,51 @@
+.neon-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.neon-icon-base {
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  transition: all 0.3s ease;
+}
+
+/* Primary Cyan-to-Purple Gradient & Glow */
+.neon-primary {
+  stroke: url(#neon-gradient-primary); /* Needs SVG defs in App */
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.6));
+}
+
+/* Fallbacks if SVG defs aren't available, we use solid color with glow */
+.neon-icon-base {
+  /* Default styling just in case */
+  stroke: #00f2fe;
+}
+
+.neon-primary {
+  stroke: #a78bfa;
+  filter: drop-shadow(0 0 5px rgba(167, 139, 250, 0.8));
+}
+
+.neon-blue {
+  stroke: #3b82f6;
+  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.8));
+}
+
+.neon-pink {
+  stroke: #ec4899;
+  filter: drop-shadow(0 0 5px rgba(236, 72, 153, 0.8));
+}
+
+.neon-green {
+  stroke: #10b981;
+  filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.8));
+}
+
+.neon-icon-wrapper:hover .neon-icon-base {
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)) drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
+  transform: scale(1.1);
+}
