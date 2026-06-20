@@ -55,10 +55,10 @@ app.get('/api/health', async (req, res) => {
   let geminiStatus = 'checking';
   try {
     if (process.env.GEMINI_API_KEY) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
       await axios.post(url, {
         contents: [{ parts: [{ text: "ping" }] }]
-      }, { timeout: 3000 });
+      }, { timeout: 8000 });
       geminiStatus = 'connected';
     } else {
       geminiStatus = 'error';
@@ -73,7 +73,7 @@ app.get('/api/health', async (req, res) => {
     if (process.env.OPENROUTER_API_KEY) {
       await axios.get('https://openrouter.ai/api/v1/auth/key', {
         headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
-        timeout: 3000
+        timeout: 8000
       });
       openrouterStatus = 'connected';
     } else {
