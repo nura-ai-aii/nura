@@ -208,11 +208,17 @@ function App() {
   // Health check
   const checkHealth = useCallback(async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/health`, { signal: AbortSignal.timeout(15000) });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
+      const res = await fetch(`${BACKEND_URL}/api/health`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
       const data = await res.json();
       setApiHealth(data);
       setApiStatus((data.groq === 'connected' && data.gemini === 'connected' && data.openrouter === 'connected') ? 'CONNECTED' : 'ERROR');
     } catch (e) {
+      console.error('Health check failed:', e);
       setApiHealth({ backend: 'error', groq: 'error', gemini: 'error', openrouter: 'error', github: 'error', tts: 'error' });
       setApiStatus('OFFLINE');
       // Offline alert removed as per user preference (showing loading spinner instead)
