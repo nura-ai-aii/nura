@@ -368,10 +368,24 @@ function App() {
           if (r?.action === "generate_media") {
             if (r.type === "image") {
               const safePrompt = (r.prompt || "futuristic AI core").substring(0, 800);
-              const encoded = encodeURIComponent(`${safePrompt}, JARVIS holographic style, neon, 4k`);
-              const imgUrl = `https://pollinations.ai/p/${encoded}?width=1024&height=1024&seed=${Date.now()}`;
-              setChatHistory(prev => [...prev, { role: "assistant", content: "Image rendering complete. Visual output secured.", imageUrl: imgUrl }]);
-              emitAlert('MEDIA', "NEURAL IMAGE SECURED VIA POLLINATIONS! 🎨", false);
+              (async () => {
+                emitAlert('MEDIA', "CONNECTING TO HERCAI AI CLUSTER... 🎨", false);
+                try {
+                  const res = await fetch(`https://hercai.onrender.com/v3/text2image?prompt=${encodeURIComponent(safePrompt + ', detailed, 4k')}`);
+                  const data = await res.json();
+                  if (data && data.url) {
+                    setChatHistory(prev => [...prev, { role: "assistant", content: "Image rendering complete. Visual output secured.", imageUrl: data.url }]);
+                    emitAlert('MEDIA', "NEURAL IMAGE SECURED VIA HERCAI API! 🎨", false);
+                  } else {
+                    throw new Error("Invalid Hercai response");
+                  }
+                } catch (e) {
+                  console.error("Hercai failed:", e);
+                  const fallbackUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=1024&height=1024&nologo=true`;
+                  setChatHistory(prev => [...prev, { role: "assistant", content: "Primary generator failed. Fallback image rendered.", imageUrl: fallbackUrl }]);
+                  emitAlert('MEDIA', "NEURAL IMAGE SECURED VIA FALLBACK API! 🎨", false);
+                }
+              })();
             } else if (r.type === "video") {
               (async () => {
                 emitAlert('MEDIA', "RENDER REQUEST SUBMITTED TO JSON2VIDEO CORES... 🎥", false);
