@@ -208,7 +208,7 @@ function App() {
   // Health check
   const checkHealth = useCallback(async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/health`, { signal: AbortSignal.timeout(5000) });
+      const res = await fetch(`${BACKEND_URL}/api/health`, { signal: AbortSignal.timeout(15000) });
       const data = await res.json();
       setApiHealth(data);
       setApiStatus((data.groq === 'connected' && data.gemini === 'connected' && data.openrouter === 'connected') ? 'CONNECTED' : 'ERROR');

@@ -42,47 +42,48 @@ setInterval(() => {
 // HEALTH CHECK (Live Validation)
 // ──────────────────────────────────────────────
 app.get('/api/health', async (req, res) => {
-  let groqStatus = 'checking';
-  try {
-    // Perform a tiny, fast check to verify API key
-    await groq.models.list();
-    groqStatus = 'connected';
-  } catch (e) {
-    groqStatus = 'error';
-    console.error('[HEALTH] Groq Connection Failed:', e.message);
-  }
-
-  let geminiStatus = 'checking';
-  try {
-    if (process.env.GEMINI_API_KEY) {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
-      await axios.post(url, {
-        contents: [{ parts: [{ text: "ping" }] }]
-      }, { timeout: 8000 });
-      geminiStatus = 'connected';
-    } else {
-      geminiStatus = 'error';
+  const checkGroq = async () => {
+    try {
+      await groq.models.list();
+      return 'connected';
+    } catch (e) {
+      console.error('[HEALTH] Groq Connection Failed:', e.message);
+      return 'error';
     }
-  } catch (e) {
-    geminiStatus = 'error';
-    console.error('[HEALTH] Gemini Connection Failed:', e.message);
-  }
+  };
 
-  let openrouterStatus = 'checking';
-  try {
-    if (process.env.OPENROUTER_API_KEY) {
+  const checkGemini = async () => {
+    try {
+      if (!process.env.GEMINI_API_KEY) return 'error';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      await axios.post(url, { contents: [{ parts: [{ text: "ping" }] }] }, { timeout: 8000 });
+      return 'connected';
+    } catch (e) {
+      console.error('[HEALTH] Gemini Connection Failed:', e.message);
+      return 'error';
+    }
+  };
+
+  const checkOpenRouter = async () => {
+    try {
+      if (!process.env.OPENROUTER_API_KEY) return 'error';
       await axios.get('https://openrouter.ai/api/v1/auth/key', {
         headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
         timeout: 8000
       });
-      openrouterStatus = 'connected';
-    } else {
-      openrouterStatus = 'error';
+      return 'connected';
+    } catch (e) {
+      console.error('[HEALTH] OpenRouter Connection Failed:', e.message);
+      return 'error';
     }
-  } catch (e) {
-    openrouterStatus = 'error';
-    console.error('[HEALTH] OpenRouter Connection Failed:', e.message);
-  }
+  };
+
+  // Run all health checks in parallel to prevent cascade timeouts
+  const [groqStatus, geminiStatus, openrouterStatus] = await Promise.all([
+    checkGroq(),
+    checkGemini(),
+    checkOpenRouter()
+  ]);
 
   res.json({ 
     status: 'ok', 
