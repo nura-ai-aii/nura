@@ -44,7 +44,10 @@ setInterval(() => {
 app.get('/api/health', async (req, res) => {
   const checkGroq = async () => {
     try {
-      await groq.models.list();
+      await Promise.race([
+        groq.models.list(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+      ]);
       return 'connected';
     } catch (e) {
       console.error('[HEALTH] Groq Connection Failed:', e.message);
@@ -78,27 +81,40 @@ app.get('/api/health', async (req, res) => {
     }
   };
 
-  // Run all health checks in parallel to prevent cascade timeouts
-  const [groqStatus, geminiStatus, openrouterStatus] = await Promise.all([
-    checkGroq(),
-    checkGemini(),
-    checkOpenRouter()
-  ]);
+  // Run all health checks in parallel to prevent cascade timeouts, with an absolute 9s fallback
+  try {
+    const [groqStatus, geminiStatus, openrouterStatus] = await Promise.race([
+      Promise.all([checkGroq(), checkGemini(), checkOpenRouter()]),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('global_timeout')), 9000))
+    ]);
 
-  res.json({ 
-    status: 'ok', 
-    groq: groqStatus, 
-    gemini: geminiStatus,
-    openrouter: openrouterStatus,
-    github: 'connected',
-    tts: 'ok', 
-    backend: 'ok', 
-    timestamp: Date.now() 
-  });
+    res.json({ 
+      status: 'ok', 
+      groq: groqStatus, 
+      gemini: geminiStatus,
+      openrouter: openrouterStatus,
+      github: 'connected',
+      tts: 'ok', 
+      backend: 'ok', 
+      timestamp: Date.now() 
+    });
+  } catch (err) {
+    console.error('[HEALTH] Absolute Timeout reached:', err.message);
+    res.json({
+      status: 'error',
+      groq: 'error',
+      gemini: 'error',
+      openrouter: 'error',
+      github: 'connected',
+      tts: 'ok',
+      backend: 'error',
+      timestamp: Date.now()
+    });
+  }
 });
 
 const PORT = process.env.PORT || 5001;
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || 'missing_key' });
 
 
 // ──────────────────────────────────────────────
