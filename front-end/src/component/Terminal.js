@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import './Terminal.css';
 import { createSharedChat } from '../historyService';
 import { emitAlert } from './AlertSystem';
@@ -174,7 +175,7 @@ export default function Terminal({
                   {msg.role === 'user' ? 'USER_INPUT' : 'HEXPAR_SYSTEM'}
                 </div>
                 <div className="bubble-content">
-                  {msg.content}
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
                   {msg.imageUrl && (
                     <div className="chat-image-wrapper" onClick={() => setActiveImageMenu(activeImageMenu === index ? null : index)} style={{ position: 'relative', marginTop: '10px' }}>
                       <img src={msg.imageUrl} alt="Neural Output" style={{ maxWidth: '100%', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(0, 245, 255, 0.2)' }} />

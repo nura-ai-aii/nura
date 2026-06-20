@@ -606,6 +606,8 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  word-break: break-word;
 }
 
 .premium-messages-scroll-area {

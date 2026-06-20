@@ -17,10 +17,11 @@ import {
 export const saveChatSession = async (uid, sessionId, messages, title) => {
   if (!uid || !sessionId || !messages || messages.length === 0) return;
   try {
+    const sanitizedMessages = JSON.parse(JSON.stringify(messages));
     const sessionRef = doc(db, "users", uid, "sessions", sessionId);
     await setDoc(sessionRef, {
       title: title || "New Conversation",
-      messages: messages,
+      messages: sanitizedMessages,
       updatedAt: serverTimestamp()
     }, { merge: true });
   } catch (error) {
@@ -69,12 +70,14 @@ export const deleteChatSession = async (uid, sessionId) => {
 export const createSharedChat = async (uid, title, messages) => {
   if (!uid || !messages || messages.length === 0) return null;
   try {
+    // Sanitize messages for Firebase (removes undefined, functions, cyclic refs)
+    const sanitizedMessages = JSON.parse(JSON.stringify(messages));
     const sharedChatsRef = collection(db, "shared_chats");
     const newSharedDoc = doc(sharedChatsRef); // Automatically generates unique random ID
     const chatId = newSharedDoc.id;
     await setDoc(newSharedDoc, {
       title: title || "Shared Conversation",
-      messages: messages,
+      messages: sanitizedMessages,
       createdAt: serverTimestamp(),
       ownerUid: uid
     });

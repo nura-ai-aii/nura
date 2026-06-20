@@ -162,7 +162,7 @@ body, html {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 0 24px;
   overflow-y: auto;
   padding-bottom: 110px; /* Space for nav bar */

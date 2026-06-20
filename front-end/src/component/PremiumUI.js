@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import './PremiumUI.css';
 import NeonIcon from './NeonIcon';
 import { getChatSessions, deleteChatSession, createSharedChat } from '../historyService';
@@ -536,7 +537,7 @@ export default function PremiumUI({
                       {msg.role === 'user' ? 'USER_INPUT' : 'HEXPAR_SYSTEM'}
                     </div>
                     <div className="premium-bubble-text">
-                      {msg.content}
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
                       {msg.imageUrl && (
                         <div className="chat-image-wrapper" onClick={() => setActiveImageMenu(activeImageMenu === index ? null : index)} style={{ position: 'relative', marginTop: '10px' }}>
                           <img src={msg.imageUrl} alt="Neural Output" className="chat-inline-image" style={{ maxWidth: '100%', borderRadius: '8px', cursor: 'pointer', border: '1px solid rgba(0, 245, 255, 0.2)' }} />

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import './MobileAppUI.css';
 import { uploadAvatar, signOutUser } from '../firebaseAuth';
 import { createSharedChat, getChatSessions, deleteChatSession } from '../historyService';
@@ -80,11 +81,16 @@ const MobileAppUI = ({ currentUser, chatHistory, onSendMessage, interactionState
     if (!currentUser || chatHistory.length === 0) return;
     setIsSharingChat(true);
     try {
-      const shareUrl = await createSharedChat(currentUser.uid, chatHistory);
-      setGeneratedShareUrl(shareUrl);
-      emitAlert('SYSTEM', "Conversation Shared!");
+      const chatId = await createSharedChat(currentUser.uid, "Mobile Session", chatHistory);
+      if (chatId) {
+        const url = `${window.location.origin}/share/${chatId}`;
+        setGeneratedShareUrl(url);
+        emitAlert('SYSTEM', "Conversation Shared!");
+      } else {
+        emitAlert('SYS_ERROR', "Failed to share conversation", true);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error creating shared chat:", err);
       emitAlert('SYS_ERROR', "Failed to share conversation", true);
     }
     setIsSharingChat(false);
@@ -278,7 +284,9 @@ const MobileAppUI = ({ currentUser, chatHistory, onSendMessage, interactionState
                     {msg.imageUrl && (
                       <img src={msg.imageUrl} alt="AI output" style={{maxWidth: '100%', borderRadius: '8px', marginBottom: '8px'}} />
                     )}
-                    {msg.content}
+                    <div className="mobile-bubble-text">
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
                   </div>
                 ))}
                 {interactionState === 'THINKING' && (

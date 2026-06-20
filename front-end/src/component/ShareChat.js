@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import { getSharedChat } from '../historyService';
 import { emitAlert } from './AlertSystem';
 import './ShareChat.css';
@@ -173,7 +174,7 @@ export default function ShareChat() {
                   {msg.role === 'user' ? 'USER_INPUT' : 'HEXPAR_SYSTEM'}
                 </div>
                 <div className="share-bubble-content">
-                  {msg.content}
+                  <ReactMarkdown>{msg.content}</ReactMarkdown>
                 </div>
               </div>
             </div>
