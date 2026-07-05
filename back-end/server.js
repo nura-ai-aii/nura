@@ -15,7 +15,7 @@ const nodemailer = require('nodemailer');
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_MODEL = "gpt-4o-mini";
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const OPENROUTER_MODEL = "openai/gpt-5.4-pro";
+const OPENROUTER_MODEL = "openai/gpt-oss-120b";
 const app = express();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
