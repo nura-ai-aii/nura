@@ -837,7 +837,8 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
         prompt: prompt,
         seedanceParams: {
           duration: 10,
-          resolution: "480p"
+          resolution: "480p",
+          aspect_ratio: "16:9"
         }
       }, {
         headers: {
