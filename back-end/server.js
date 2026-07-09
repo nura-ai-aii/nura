@@ -830,90 +830,61 @@ app.post('/api/generate-media', upload.single('image'), async (req, res) => {
       }
 
     } else if (type === 'video') {
-      const kieApiKey = process.env.VIDEO_API_KEY;
-      const kieBaseUrl = process.env.VIDEO_API_URL || 'https://api.kie.ai';
-
-      console.log(`[GROK-VIDEO] Triggering render job for: "${prompt}"`);
-      const response = await axios.post(`${kieBaseUrl}/api/v1/jobs/createTask`, {
-        model: "grok-imagine-video-1-5-preview",
-        input: {
-          prompt: prompt,
-          image_urls: [],
-          aspect_ratio: "16:9",
-          resolution: "480p",
-          duration: 8
-        },
-        callBackUrl: "https://nura-h0p6.onrender.com/api/callback"
+      const apiframeApiKey = "afk_cf3fbd69903da4666c4fd4acf1f531932ed2f2d8";
+      console.log(`[APIFRAME] Triggering render job for: "${prompt}"`);
+      const response = await axios.post("https://api.apiframe.ai/v2/videos/generate", {
+        model: "seedance-1-pro",
+        prompt: prompt,
+        seedanceParams: {
+          duration: 10,
+          resolution: "480p"
+        }
       }, {
         headers: {
-          'Authorization': `Bearer ${kieApiKey}`,
-          'Content-Type': 'application/json'
+          "X-API-Key": apiframeApiKey,
+          "Content-Type": "application/json"
         }
       });
 
-      const taskId = response.data?.data?.taskId || response.data?.taskId;
+      const taskId = response.data?.id;
       if (!taskId) {
-        throw new Error("No task ID returned by Grok Video API: " + JSON.stringify(response.data));
+        throw new Error("No task ID returned by Apiframe API: " + JSON.stringify(response.data));
       }
 
-      console.log(`[GROK-VIDEO] Render job created. Task ID: ${taskId}. Starting polling...`);
+      console.log(`[APIFRAME] Render job created. Task ID: ${taskId}. Starting polling...`);
 
-      // Poll every 4 seconds for up to 30 times (2 minutes timeout)
       let videoUrl = "";
-      for (let i = 0; i < 30; i++) {
-        await new Promise(resolve => setTimeout(resolve, 4000));
+      for (let i = 0; i < 60; i++) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
         
         try {
-          // Some KIE APIs use /api/v1/jobs, others use /v1/jobs. Let's try the one from veo first
-          const pollEndpoint = `${kieBaseUrl}/v1/jobs/recordInfo`;
+          const pollEndpoint = `https://api.apiframe.ai/v2/jobs/${taskId}`;
           const statusRes = await axios.get(pollEndpoint, {
-            params: { jobId: taskId, taskId: taskId }, 
             headers: {
-              'Authorization': `Bearer ${kieApiKey}`,
-              'Accept': 'application/json'
+              "X-API-Key": apiframeApiKey,
+              "Accept": "application/json"
             }
           });
 
-          const data = statusRes.data?.data || statusRes.data;
-          const status = data?.status?.toLowerCase();
-          console.log(`[GROK-VIDEO] Polling status iteration ${i+1}: ${status}`);
+          const data = statusRes.data;
+          const status = data?.status?.toUpperCase();
+          console.log(`[APIFRAME] Polling status iteration ${i+1}: ${status}`);
           
-          if (status === 'completed' || status === 'success') {
-            videoUrl = data?.result?.url || data?.videoUrl || data?.url;
+          if (status === 'COMPLETED' || status === 'SUCCESS') {
+            videoUrl = data?.result?.url || data?.result || data?.url;
             break;
-          } else if (status === 'failed' || status === 'error') {
-            throw new Error("Grok Video render job failed: " + JSON.stringify(data));
+          } else if (status === 'FAILED' || status === 'ERROR') {
+            throw new Error("Apiframe Video render job failed: " + JSON.stringify(data));
           }
         } catch (pollErr) {
-          // If polling throws 404, try the other endpoint format
-          if (pollErr.response?.status === 404) {
-            try {
-              const altStatusRes = await axios.get(`${kieBaseUrl}/api/v1/jobs/recordInfo`, {
-                params: { jobId: taskId, taskId: taskId },
-                headers: { 'Authorization': `Bearer ${kieApiKey}` }
-              });
-              const data = altStatusRes.data?.data || altStatusRes.data;
-              const status = data?.status?.toLowerCase();
-              console.log(`[GROK-VIDEO] Polling alt status iteration ${i+1}: ${status}`);
-              if (status === 'completed' || status === 'success') {
-                videoUrl = data?.result?.url || data?.videoUrl || data?.url;
-                break;
-              } else if (status === 'failed' || status === 'error') {
-                throw new Error("Grok Video render job failed on alt endpoint: " + JSON.stringify(data));
-              }
-            } catch (altErr) {
-              console.warn(`[GROK-VIDEO] Alt polling failed: ${altErr.message}`);
-            }
-          } else {
-             console.warn(`[GROK-VIDEO] Polling warning: ${pollErr.message}`);
-          }
+           console.warn(`[APIFRAME] Polling warning: ${pollErr.message}`);
         }
       }
 
       if (videoUrl) {
         return res.json({ url: videoUrl });
       } else {
-        throw new Error("Grok Video render job timed out or polling failed");
+        throw new Error("Apiframe Video render job timed out or polling failed");
       }
     } else {
       return res.status(400).json({ error: "Unsupported media generation type." });
